@@ -1,0 +1,44 @@
+{
+  "private": true,
+  "target": "web",
+  "scripts": {
+    "build:production": "npx webpack --config webpack.config.production.js",
+    "build:development": "npx webpack --config webpack.config.development.js",
+    "build:debug": "npx webpack --config webpack.config.debug.js",
+    "webpack": "webpack"
+  },
+  "dependencies": {
+    "@pixi/app": "^7.4.2",
+    "axios": "^1.2.1",
+    "dat.gui": "^0.7.9",
+    "filemanager-webpack-plugin": "^8.0.0",
+    "ftp": "^0.3.10",
+    "gamestats.js": "^1.0.4",
+    "gsap": "^3.12.5",
+    "open": "^10.0.4",
+    "pixi-stats": "^1.2.2",
+    "pixi-tween": "^0.2.0",
+    "pixi.js": "^8.0.4",
+    "socket.io": "^4.7.5",
+    "stats.js": "^0.17.0",
+    "typescript": "^5.4.4",
+    "webpack-bundle-analyzer": "^4.10.1",
+    "webpack-hot-middleware": "^2.26.1",
+    "webpack-shell-plugin-next": "^2.3.1"
+  },
+  "devDependencies": {
+    "@types/dat.gui": "^0.7.13",
+    "copy-webpack-plugin": "^11.0.0",
+    "fs": "^0.0.1-security",
+    "ftp": "^0.3.10",
+    "html-webpack-plugin": "^5.5.3",
+    "pako": "^2.1.0",
+    "terser-webpack-plugin": "^5.3.6",
+    "ts-loader": "^9.3.1",
+    "ts-node": "^10.9.1",
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0",
+    "webpack-livereload-plugin": "^3.0.2",
+    "webpack-shell-plugin-next": "^2.3.1"
+  }
+}

@@ -1,0 +1,76 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: white;
+        }
+
+        html, body, canvas {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            overflow: hidden;
+            background-color: white;
+            overflow: hidden;
+        }
+
+        #canvas-game {
+            margin: 0;
+            padding: 0;
+            width: 100% !important;
+            height: 100% !important;
+            position: absolute;
+            background: white;
+            /* touch-action: pan-x pan-y !important;*/
+        }
+
+        canvas {
+            background: white;
+            /*     touch-action: pan-x pan-y !important;*/
+        }
+
+        div#stats {
+            position: fixed;
+            top: 0;
+            right: 0;
+            z-index: 500;
+            width: max(200px, 10vw, 10vh);
+            height: max(100px, 6vh, 6vw);
+            opacity: 0.8;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+
+<script> javascript: (function () {
+    var script = document.createElement('script');
+    script.onload = function () {
+        var stats = new
+        Stats();
+        stats.showPanel(2);
+        document.body.appendChild(stats.dom);
+        requestAnimationFrame(function
+            loop() {
+            stats.update();
+            requestAnimationFrame(loop)
+        });
+    };
+    script.src = 'https://mrdoob.github.io/stats.js/build/stats.min.js';
+    document.head.appendChild(script);
+})()
+</script>
+<script type="text/javascript" src="./dat.gui.min.js"></script>
+<div id="canvas-game"></div>
+<script src="http://localhost:35729/livereload.js"></script>
+<script src="./pixi.js" type="application/javascript"></script>
+<script src="./app.js" type="application/javascript"></script>
+</body>
+</html>
