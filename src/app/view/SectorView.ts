@@ -102,7 +102,7 @@ export class SectorView extends Container {
         let makeRandom = () => {
             let arr = [];
 
-            let rnd =  Math.floor(Math.random() * (this.blocks.length - 1));
+            let rnd = Math.floor(Math.random() * (this.blocks.length - 1));
             for (let i = 0; i < this.blocks.length; i++) {
                 let block = this.blocks[i];
                 if (i > rnd) {
@@ -128,10 +128,16 @@ export class SectorView extends Container {
             let startY = centerY - (tmp.length - 1) / 2 * spacingY;
             for (let i = 0; i < tmp.length; i++) {
                 let blockView = tmp[i];
-                blockView.y = startY + i * spacingY;
+                // blockView.y = startY + i * spacingY;
+
+                gsap.to([blockView], {
+                    y: startY + i * spacingY,
+                    duration: 0.5, // продолжительность анимации в секундах
+                    ease: "back.out",
+                });
             }
 
-            setTimeout(makeRandom, 100 + Math.random());
+            setTimeout(makeRandom, 500 + Math.random() * 1000);
         }
 
 

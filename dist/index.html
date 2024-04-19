@@ -36,6 +36,12 @@
             /*     touch-action: pan-x pan-y !important;*/
         }
 
+        #gui {
+            position: absolute;
+            top: 2px;
+            left: 100px
+        }
+
         div#stats {
             position: fixed;
             top: 0;
@@ -53,8 +59,7 @@
 <script> javascript: (function () {
     var script = document.createElement('script');
     script.onload = function () {
-        var stats = new
-        Stats();
+        var stats = new Stats();
         stats.showPanel(2);
         document.body.appendChild(stats.dom);
         requestAnimationFrame(function

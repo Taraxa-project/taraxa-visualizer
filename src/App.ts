@@ -9,6 +9,8 @@ import * as dat from 'dat.gui';
 import {BlockInfoView} from "./app/view/BlockInfoView";
 import Config from "./config/Config";
 import CustomTextures from "./utils/CustomTextures";
+import {Logo} from "./app/view/ui/Logo";
+import {TimeLine} from "./app/view/TimeLine";
 
 (async () => {
     const app = new Application();
@@ -32,10 +34,19 @@ import CustomTextures from "./utils/CustomTextures";
     const blockTexture = await Assets.load('./block@4x_white.png');
     CustomTextures.textures.blockTexture = blockTexture;
 
+    const logo = await Assets.load({
+        src: './logo.svg', data: {
+            parseAsGraphicsContext: false,
+        }
+    });
+
+    CustomTextures.textures.logo = logo;
+
     const params = {
         zoom: 1.0,
     };
-    const gui = new dat.GUI();
+    const gui = new dat.GUI(/*{ autoPlace: false }*/);
+    gui.domElement.id = 'gui';
     gui.add(params, 'zoom', 0.1, 5, 0.01).onChange((value: any) => {
         console.log(value);
         view.scale.set(value);
@@ -60,15 +71,14 @@ import CustomTextures from "./utils/CustomTextures";
     colors.addColor(Config.colors, 'blockcolor').onChange((value: any) => {
         Config.colors.blockcolor = value;
     });
-    gui.open();
-    colors.open();
-
+    // gui.open();
+    // colors.open();
+    gui.close()
     // return;
 
     const view = new MainView(app);
     const model = new MainModel();
     const controller = new MainController();
-    //  const infoView = new BlockInfoView(app);
 
     const loadJsonData = async (url: string): Promise<any> => {
         try {
@@ -95,7 +105,7 @@ import CustomTextures from "./utils/CustomTextures";
 
         app.ticker.add((time) => {
             // if (t == 300) {
-            // view.update();
+            view.update();
             t = 0;
             // }
             t++;
