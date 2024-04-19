@@ -5,6 +5,8 @@ import {TimelineSectorModel} from "../model/TimelineSectorModel";
 import {SectorView} from "./SectorView";
 import {BlockModel} from "../model/BlockModel";
 import CustomTextures from "../../utils/CustomTextures";
+import {SectorHighlightView} from "./SectorHighlightView";
+import Config from "../../config/Config";
 
 export class MainView extends Container {
 
@@ -15,6 +17,7 @@ export class MainView extends Container {
     updateData: Function;
     onRescale: Function;
 
+    sectorsHighLights: SectorHighlightView[] = [];
     sectors: SectorView[] = [];
 
     constructor(app: Application) {
@@ -35,37 +38,39 @@ export class MainView extends Container {
             }
         });
 
-        let obj = new Graphics();
-        obj.rect(-1920 / 2, -1080 / 2, 1920, 1080)
-            .fill(0x666666)
-            .stroke({width: 5, color: 0xffffff});
-        this.addChild(obj);
+        /*  let obj = new Graphics();
+          obj.rect(-1920 / 2, -1080 / 2, 1920, 1080)
+              .fill(0x666666)
+              .stroke({width: 5, color: 0xffffff});
+          this.addChild(obj);*/
 
         let dragTarget: any = null;
+
+        let contHighlight = new Container();
+        this.addChild(contHighlight);
+        contHighlight.x = -1920 / 2;
+        contHighlight.y = -1080 / 2;
 
         let contGraphics = new Container();
         this.addChild(contGraphics);
         contGraphics.x = -1920 / 2;
         contGraphics.y = -1080 / 2;
+        const graphics = new Graphics();
+        contGraphics.addChild(graphics);
+
 
         let cont = new Container();
         this.addChild(cont);
         cont.x = -1920 / 2;
         cont.y = -1080 / 2;
 
-        let contLines = new Container();
-        this.addChild(contLines);
-        contLines.x = -1920 / 2;
-        contLines.y = -1080 / 2;
-
-
         let sliderbar = new Container();
         this.addChild(sliderbar);
         /** zoom bar **/
         let proc = 0;
-        const sliderWidth = 800;
+        const sliderWidth = Config.DEFAULT_WIDTH-Config.DEFAULT_WIDTH/10;
 
-        const slider = new Graphics().rect(0, 0, sliderWidth, 10).fill({color: 0x272d37});
+        const slider = new Graphics().rect(0, 0, sliderWidth, 10).fill({color: Config.colors.darkgreen});
         slider.x = 0;
         slider.y = 0;
 
@@ -82,7 +87,8 @@ export class MainView extends Container {
         _obj.scale = 14;
         sliderbar.addChild(_obj)
 
-        const handle = new Graphics().circle(0, 0, 30).fill({color: 0xffffff});
+        const handle = new Graphics().circle(0, 0, 30).fill({color: Config.colors.green});
+
         handle.y = slider.height / 2;
         handle.x = -15;
         handle.eventMode = 'static';
@@ -109,7 +115,7 @@ export class MainView extends Container {
             handle.x = Math.max(halfHandleWidth, Math.min(slider.toLocal(e.global).x, sliderWidth - halfHandleWidth));
             const t = (handle.x / sliderWidth) - 0.0375;
             cont.x = -t * (cont.width + 1300) - 1920 / 2;
-            contGraphics.x = contLines.x = cont.x;
+            contHighlight.x = contGraphics.x = cont.x;
         }
 
         let circ = new Graphics()
@@ -120,37 +126,32 @@ export class MainView extends Container {
         let hexagonRadius = 50;
         let hexagonHeight = hexagonRadius * Math.sqrt(3);
         let hx = new Graphics();
-        hx.poly([
-            -hexagonRadius, 0,
-            -hexagonRadius / 2, hexagonHeight / 2,
-            hexagonRadius / 2, hexagonHeight / 2,
-            hexagonRadius, 0,
-            hexagonRadius / 2, -hexagonHeight / 2,
-            -hexagonRadius / 2, -hexagonHeight / 2,])
-            .fill(0x666666)
-            .stroke({width: 5, color: 0xffffff});
+        /* hx.poly([
+             -hexagonRadius, 0,
+             -hexagonRadius / 2, hexagonHeight / 2,
+             hexagonRadius / 2, hexagonHeight / 2,
+             hexagonRadius, 0,
+             hexagonRadius / 2, -hexagonHeight / 2,
+             -hexagonRadius / 2, -hexagonHeight / 2,])
+             .fill(0x666666)
+             .stroke({width: 5, color: 0xffffff});*/
+
+        hx.roundRect(0, 0, 200, 200, 25)
+            .fill('#151824')
         // this.addChild(hx);
-        console.log('generate texture');
         CustomTextures.textures.hex = app.renderer.generateTexture(hx);
 
-        /*let sector = new SectorView(app);
-        sector.model = new TimelineSectorModel();
-        sector.model.add(new BlockModel({
-            hash: "0x46ff6297dcbb198c7f9d82742a960e10b662072567ea685ba590b18f43e58e9d",
-            level: "0x19d500d",
-            pivot: "0x949fef8dc7c6bba9557049e354155dca083e653a35a89b9b4409fcaa0ef12f7d",
-            sender: "0x20db40df2a8609a8b215fc3d841585b7e32be37c",
-            timestamp: "0x66167acb",
-        }));
-        this.addChild(sector);
-        this.sectors.push(sector);
-*/
-
         for (let i = 0; i < 100; i++) {
+            let shl = new SectorHighlightView(app);
+            shl.x = 400 * i;
+            shl.y = 150;
+            contHighlight.addChild(shl);
+            this.sectorsHighLights.push(shl);
+
             let sector = new SectorView(app);
             sector.createUniformBlocks(1 + Math.floor(Math.random() * 16));
             // sector.render();
-            sector.debug(i + '\r' + new Date().getTime());
+            sector.debug('Level:\r' + new Date().getTime());
             sector.x = 400 * i;
             sector.y = 150;
             sector.vid = i;
@@ -160,8 +161,6 @@ export class MainView extends Container {
         }
 
         this.on('onSector', (vid: number) => {
-
-            console.log(vid)
         });
 
         let clear = () => {
@@ -171,11 +170,11 @@ export class MainView extends Container {
                 sector.destroy()
                 sector = null;
             }
-            contLines.children.forEach((child: any) => {
-                contLines.removeChild(child);
-                child.destroy();
-                child = null;
-            })
+            /*          contLines.children.forEach((child: any) => {
+                          contLines.removeChild(child);
+                          child.destroy();
+                          child = null;
+                      })*/
 
             contGraphics.children.forEach((child: Graphics) => {
                 // child.clear();
@@ -184,7 +183,6 @@ export class MainView extends Container {
 
             this.sectors = [];
         }
-
         this.updateData = (viewMap: any) => {
             this.mapData = viewMap;
             this.update();
@@ -195,28 +193,29 @@ export class MainView extends Container {
         }
 
         this.drawConnect = () => {
+            graphics.clear();
             for (let i = 0; i < this.sectors.length; i++) {
                 let current = this.sectors[i];
                 if (i - 1 < this.sectors.length - 1) {
                     let prev = this.sectors[i - 1];
                     if (prev && current) {
-
                         for (let v = 0; v < current.blocks.length; v++) {
                             let block = current.blocks[v];
-                            let pivot = block.model.pivot;
+                            //  let pivot = block.model.pivot;
 
                             for (let h = 0; h < prev.blocks.length; h++) {
                                 let blockPrev = prev.blocks[h];
-                                let hash = blockPrev.model.hash;
-                                if (hash == pivot) {
+                                //       let hash = blockPrev.model.hash;
+                                //  if (hash == pivot) {
 
-                                    const graphics = new Graphics();
-                                    graphics.fill({color: 0xffff0b, alpha: 0.5});
-                                    graphics.moveTo(current.x + 200, current.y + 400 + block.y);
-                                    graphics.lineTo(prev.x + 200, prev.y + 400 + blockPrev.y);
-                                    graphics.stroke({width: 5, color: 0x33ff00});
-                                    contGraphics.addChild(graphics);
-                                }
+
+                                graphics.fill({color: 0xffff0b, alpha: 0.5});
+                                graphics.moveTo(current.x + 200, current.y + 400 + block.y);
+                                graphics.lineTo(prev.x + 200, prev.y + 400 + blockPrev.y);
+                                graphics.stroke({width: 2, color: Config.colors.darkblue});
+
+                                // contGraphics.addChild(graphics);
+                                //}
                             }
                         }
                     }
@@ -231,16 +230,11 @@ export class MainView extends Container {
                 this.x = 560;
             }
         }
-
-
         this.update = () => {
-
-
             for (let i = 0; i < 100; i++) {
                 let sector = this.sectors[i];
                 sector.update();
             }
-
             return;
 
             //  clear();
@@ -264,5 +258,8 @@ export class MainView extends Container {
 
             //  this.drawConnect();
         }
+
+        this.drawConnect();
+
     }
 }

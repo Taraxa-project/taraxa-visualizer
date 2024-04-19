@@ -25,17 +25,16 @@ export class SectorView extends Container {
         super();
         app.stage.addChild(this);
 
-        let obj = new Graphics();
-        obj.rect(0, -2000, 400, 5000)
-            .fill(0x666666)
-            .stroke({width: 2, color: 0xffffff});
-        this.addChild(obj);
+        /* let obj = new Graphics();
+         obj.rect(0, -5000, 400, 10000)
+             .fill(0x666666,0)
+         // this.addChild(obj);
 
-        let obj2 = new Graphics();
-        obj2.rect(0, -2000, 400, 5000)
-            .fill(0x888888)
-        this.addChild(obj2);
-        obj2.alpha = 0;
+         let obj2 = new Graphics();
+         obj2.rect(0, -5000, 400, 10000)
+             .fill(0x292c3f)
+         // this.addChild(obj2);
+         obj2.alpha = 0;*/
 
         let cont = new Container();
         this.addChild(cont);
@@ -46,25 +45,25 @@ export class SectorView extends Container {
         basicText.y = 850;
         this.addChild(basicText);
 
-        obj.interactive = true;
-        obj.on('pointerdown', () => {
-            // this.emit('onSector', this.vid);
-            // new EventEmitter().context = {this.vid}
-        })
-        obj.on('pointerover', () => {
-            gsap.to([obj2], {
-                duration: 0.2, // продолжительность анимации в секундах
-                alpha: 1,      // конечная позиция y
-                ease: "sine.in",
-            });
-        })
-        obj.on('pointerout', () => {
-            gsap.to([obj2], {
-                duration: 0.2, // продолжительность анимации в секундах
-                alpha: 0,      // конечная позиция y
-                ease: "sine.in",
-            });
-        })
+        /* obj.interactive = true;
+         obj.on('pointerdown', () => {
+             // this.emit('onSector', this.vid);
+             // new EventEmitter().context = {this.vid}
+         })
+         obj.on('pointerover', () => {
+             gsap.to([obj2], {
+                 duration: 0.2, // продолжительность анимации в секундах
+                 alpha: 1,      // конечная позиция y
+                 ease: "sine.in",
+             });
+         })
+         obj.on('pointerout', () => {
+             gsap.to([obj2], {
+                 duration: 0.2, // продолжительность анимации в секундах
+                 alpha: 0,      // конечная позиция y
+                 ease: "sine.in",
+             });
+         })*/
 
         this.init = (model: TimelineSectorModel) => {
             this.model = model;
@@ -76,7 +75,7 @@ export class SectorView extends Container {
 
         this.createUniformBlocks = (numBlocks: number) => {
             const centerY = 0; // Центральная позиция Y для первого блока
-            const spacingY = 130; // Расстояние между блоками
+            const spacingY = 100; // Расстояние между блоками
             let startY = centerY - (numBlocks - 1) / 2 * spacingY;
 
             for (let i = 0; i < numBlocks; i++) {
@@ -95,7 +94,47 @@ export class SectorView extends Container {
                 blockView.x = 200;
                 blockView.y = startY + i * spacingY;
             }
+
+            makeRandom();
         }
+
+
+        let makeRandom = () => {
+            let arr = [];
+
+            let rnd =  Math.floor(Math.random() * (this.blocks.length - 1));
+            for (let i = 0; i < this.blocks.length; i++) {
+                let block = this.blocks[i];
+                if (i > rnd) {
+                    block.visible = false;
+                } else {
+                    block.visible = true;
+                    arr.push(block);
+                }
+            }
+
+            const centerY = 0; // Центральная позиция Y для первого блока
+            const spacingY = 100; // Расстояние между блоками
+
+            let tmp = [];
+            for (let i = 0; i < arr.length; i++) {
+                let block = arr[i];
+                if (i % 2 == 0) {
+                    tmp.push(block);
+                } else {
+                    tmp.unshift(block);
+                }
+            }
+            let startY = centerY - (tmp.length - 1) / 2 * spacingY;
+            for (let i = 0; i < tmp.length; i++) {
+                let blockView = tmp[i];
+                blockView.y = startY + i * spacingY;
+            }
+
+            setTimeout(makeRandom, 100 + Math.random());
+        }
+
+
         this.update = () => {
             for (let i = 0; i < this.blocks.length; i++) {
                 let blockView = this.blocks[i];

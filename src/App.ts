@@ -2,31 +2,73 @@ import MyScale from "./utils/MyScale";
 import {MainView} from "./app/view/MainView";
 import {MainModel} from "./app/model/MainModel";
 import {MainController} from "./app/controller/MainController";
-import {Application, Ticker, UPDATE_PRIORITY} from "pixi.js";
+import {Application, Assets, Ticker, UPDATE_PRIORITY} from "pixi.js";
 import {WSClient} from "./net/WSClient";
 import {BlockModel} from "./app/model/BlockModel";
-// import * as dat from 'dat.gui';
+import * as dat from 'dat.gui';
+import {BlockInfoView} from "./app/view/BlockInfoView";
+import Config from "./config/Config";
+import CustomTextures from "./utils/CustomTextures";
+
 (async () => {
     const app = new Application();
     await app.init({
         roundPixels: true,
-        resolution: 3,
+        resolution: 1,
         antialias: true,
         width: 1920,
         height: 1080,
-        background: '#949494',
+        background: '#151824',
         preference: 'webgl',
     });
+    app.ticker.maxFPS = 60;
+
     document.getElementById('canvas-game').appendChild(app.canvas);
     //@ts-ignore
     globalThis.__PIXI_APP__ = app;
     MyScale.app = app;
     window.addEventListener('resize', MyScale.resize);
 
-    let view = new MainView(app);
+    const blockTexture = await Assets.load('./block@4x_white.png');
+    CustomTextures.textures.blockTexture = blockTexture;
+
+    const params = {
+        zoom: 1.0,
+    };
+    const gui = new dat.GUI();
+    gui.add(params, 'zoom', 0.1, 5, 0.01).onChange((value: any) => {
+        console.log(value);
+        view.scale.set(value);
+    });
+
+    const colors = gui.addFolder('Color');
+    colors.addColor(Config.colors, 'green').onChange((value: any) => {
+        console.log(value);
+    });
+    colors.addColor(Config.colors, 'darkgreen').onChange((value: any) => {
+        console.log(value);
+    });
+    colors.addColor(Config.colors, 'darkback').onChange((value: any) => {
+        app.renderer.background.color = Config.colors.darkback;
+    });
+    colors.addColor(Config.colors, 'darkblue').onChange((value: any) => {
+        console.log(value);
+    });
+    colors.addColor(Config.colors, 'yellow').onChange((value: any) => {
+        console.log(value);
+    });
+    colors.addColor(Config.colors, 'blockcolor').onChange((value: any) => {
+        Config.colors.blockcolor = value;
+    });
+    gui.open();
+    colors.open();
+
+    // return;
+
+    const view = new MainView(app);
     const model = new MainModel();
     const controller = new MainController();
-    // const gui = new dat.GUI();
+    //  const infoView = new BlockInfoView(app);
 
     const loadJsonData = async (url: string): Promise<any> => {
         try {
@@ -48,10 +90,9 @@ import {BlockModel} from "./app/model/BlockModel";
             //   controller.addTestBlock(data[i]);
         }
 
-
         MyScale.resize();
         let t = 0;
-        app.ticker.maxFPS = 60;
+
         app.ticker.add((time) => {
             // if (t == 300) {
             // view.update();
