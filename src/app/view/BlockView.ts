@@ -51,6 +51,7 @@ export class BlockView extends Container {
         let v = 1;
         let s = 1;
         this.update = () => {
+
             // obj.angle += 2;
 
             /*  v -= 0.03;

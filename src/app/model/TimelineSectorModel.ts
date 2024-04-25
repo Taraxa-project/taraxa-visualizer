@@ -6,7 +6,7 @@ export class TimelineSectorModel {
 
     update: Function;
     add: Function;
-    blocks: any = [];
+    blocks: any[] = [];
     id: number;
 
     getLink:Function;

@@ -5,21 +5,18 @@ import {TimelineSectorModel} from "../model/TimelineSectorModel";
 import {BlockView} from "./BlockView";
 import gsap from "gsap";
 import Config from "../../config/Config";
+import * as Util from "util";
 
 export class SectorView extends Container {
 
-    update: Function;
-    render: Function;
+
+    vid: number;
     model: TimelineSectorModel;
     blocks: BlockView[] = [];
-    debug: Function;
     init: Function;
-    drawConnect: Function;
-    create: Function;
     createUniformBlocks: Function;
-    createCenteredBlocks: Function;
     onRescale: Function;
-    vid: number;
+    update: Function;
 
     constructor(app: Application) {
         super();
@@ -41,9 +38,10 @@ export class SectorView extends Container {
         cont.y = 400;
 
         let basicText = new BitmapText();
-        basicText.x = 50;
+        basicText.x = 150;
         basicText.y = 850;
         this.addChild(basicText);
+
 
         /* obj.interactive = true;
          obj.on('pointerdown', () => {
@@ -69,10 +67,6 @@ export class SectorView extends Container {
             this.model = model;
         }
 
-        this.debug = (value: number) => {
-            basicText.text = value.toString();
-        }
-
         this.createUniformBlocks = (numBlocks: number) => {
             const centerY = 0; // Центральная позиция Y для первого блока
             const spacingY = 100; // Расстояние между блоками
@@ -93,145 +87,74 @@ export class SectorView extends Container {
                 let blockView = this.blocks[i];
                 blockView.x = 200;
                 blockView.y = startY + i * spacingY;
+                blockView.visible = false;
             }
-
-            makeRandom();
         }
 
+        let totalVis = 0;
+        let prevVis = 0;
+        let reposition = () => {
 
-        let makeRandom = () => {
-            let arr = [];
+            const centerY = 0;
+            const spacingY = 100;
+            let tmp = [];
 
-            let rnd = Math.floor(Math.random() * (this.blocks.length - 1));
             for (let i = 0; i < this.blocks.length; i++) {
                 let block = this.blocks[i];
-                if (i > rnd) {
-                    block.visible = false;
-                } else {
-                    block.visible = true;
-                    arr.push(block);
+                if (block.visible) {
+                    totalVis++;
+                    if (i % 2 == 0) {
+                        tmp.push(block);
+                    } else {
+                        tmp.unshift(block);
+                    }
                 }
             }
 
-            const centerY = 0; // Центральная позиция Y для первого блока
-            const spacingY = 100; // Расстояние между блоками
-
-            let tmp = [];
-            for (let i = 0; i < arr.length; i++) {
-                let block = arr[i];
-                if (i % 2 == 0) {
-                    tmp.push(block);
-                } else {
-                    tmp.unshift(block);
-                }
+            let d = 0.5;
+            if (prevVis == totalVis) {
+                d = 0;
             }
+            prevVis = totalVis;
+            totalVis = 0;
             let startY = centerY - (tmp.length - 1) / 2 * spacingY;
             for (let i = 0; i < tmp.length; i++) {
                 let blockView = tmp[i];
-                // blockView.y = startY + i * spacingY;
-
                 gsap.to([blockView], {
                     y: startY + i * spacingY,
-                    duration: 0.5, // продолжительность анимации в секундах
+                    duration: d, // продолжительность анимации в секундах
                     ease: "back.out",
+                    onUpdate: () => {
+                        Config.onCustomUpdate()
+                    }
                 });
             }
-
-            setTimeout(makeRandom, 500 + Math.random() * 1000);
         }
-
 
         this.update = () => {
-            for (let i = 0; i < this.blocks.length; i++) {
-                let blockView = this.blocks[i];
-                blockView.update();
-            }
-        }
-
-        this.create = () => {
-            let difY = 100;
-            let totalMinus = 0;
-            let totalPlus = 0;
-            for (let i = 0; i < 11; i++) {
-                let blockView = new BlockView(app);
-                blockView.debug(i);
-                cont.addChild(blockView);
-                this.blocks.push(blockView);
-                blockView.x = 200;
-                if (i != 0) {
-                    let direction = (i % 2 === 0) ? -1 : 1; // Четные индексы - вверх, нечетные - вниз
-                    let deltaY = direction * i * difY;
-                    if (direction == -1) {
-                        totalMinus++;
-                        blockView.y = direction * i - 100 * totalMinus;
-                    } else {
-                        totalPlus++;
-                        blockView.y = direction * i + 100 * totalPlus;
-                    }
+            if (this.model) {
+                for (let i = 0; i < this.model.blocks.length; i++) {
+                    let blockView = this.blocks[i];
+                    blockView.model = this.model.blocks[i];
+                    blockView.update();
+                    blockView.visible = true;
                 }
-            }
-        }
 
+                basicText.visible = true;
+                basicText.text = this.model.id.toString();
 
-        this.onRescale = (w: number, h: number) => {
-            if (w > h) {
+                reposition();
             } else {
-            }
-
-            /*    let p = new Point();
-                let pos = basicText.toGlobal(p);
-
-                basicText.y = h;
-                basicText.y = pos.y;
-
-                let size = {width: window.innerWidth, height: window.innerHeight};
-                let defScaleX = Config.DEFAULT_WIDTH / size.width;
-                let defScaleY = Config.DEFAULT_HEIGHT / size.height;
-                let scale = Math.max(defScaleX, defScaleY);
-    */
-            let width = w;
-            let height = h;
-            let newScaleX = (Math.floor(width / Config.DEFAULT_WIDTH * 100)) / 100;
-            let newScaleY = (Math.floor(height / Config.DEFAULT_HEIGHT * 100)) / 100;
-
-            //  basicText.y = 900;///(h-this.parent.parent.y) * newScaleY
-        }
-        this.render = (sectors: any) => {
-
-            this.blocks.forEach((block: BlockView) => {
-                block.destroy();
-                this.removeChild(block);
-            })
-            this.blocks = [];
-            let difY = 100;
-
-            let totalMinus = 0;
-            let totalPlus = 0;
-            for (let i = 0; i < this.model.blocks.length; i++) {
-
-                let blockModel = this.model.blocks[i];
-                let blockView = new BlockView(app);
-                blockView.debug(i);
-                cont.addChild(blockView);
-                this.blocks.push(blockView);
-                blockView.x = 200;
-
-                if (i != 0) {
-                    let direction = (i % 2 === 0) ? -1 : 1; // Четные индексы - вверх, нечетные - вниз
-                    let deltaY = direction * i * difY;
-                    if (direction == -1) {
-                        totalMinus++;
-                        blockView.y = direction * i - 100 * totalMinus;
-                    } else {
-                        totalPlus++;
-                        blockView.y = direction * i + 100 * totalPlus;
-                    }
-                } else {
+                for (let i = 0; i < this.blocks.length; i++) {
+                    let blockView = this.blocks[i];
+                    blockView.visible = false;
+                    blockView.y = 0;
                 }
-                blockView.model = blockModel;
-                // block.render();
+                basicText.visible = false;
             }
 
+        }
+        this.onRescale = (w: number, h: number) => {
         }
     }
 }

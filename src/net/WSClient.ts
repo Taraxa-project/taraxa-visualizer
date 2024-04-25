@@ -14,7 +14,6 @@ class DAGBlock {
         public tips: string[],
         public timestamp: number
     ) {
-        console.log('DAGBlock');
     }
 
     static fromJSON(data: {
@@ -37,13 +36,12 @@ class DAGBlock {
 class DAGBlockFinalized {
     constructor(
         public hash: string,
-        public level: number
+        public period: number
     ) {
-        console.log('DAGBlockFinalized');
     }
 
-    static fromJSON(data: { block: string; level: string }) {
-        return new DAGBlockFinalized(data.block, parseInt(data.level, 16));
+    static fromJSON(data: { block: string; period: string }) {
+        return new DAGBlockFinalized(data.block, parseInt(data.period, 16));
     }
 }
 
@@ -55,18 +53,24 @@ export class WSClient {
     } = {};
 
     onGetBlock: Function;
+    onBlockFinalized: Function;
 
-    constructor(url: string, onGetBlock: Function) {
+    constructor(url: string, onGetBlock: Function, onBlockFinalized: Function) {
         this.ws = new WebSocket(url);
         this.onGetBlock = onGetBlock;
+        this.onBlockFinalized = onBlockFinalized;
+
         console.log('Connected to websocket server');
         this.on(SubscriptionTypes.NEW_DAG_BLOCK, (data: any) => {
-           // console.log(data);
+            // console.log(data);
+        })
+        this.on(SubscriptionTypes.NEW_DAG_BLOCK_FINALIZED, (data: any) => {
+            // console.log(data);
         })
         // this.subscribe(SubscriptionTypes.NEW_HEADS);
         // this.subscribe(SubscriptionTypes.NEW_PENDING_TRANSACTIONS);
         this.subscribe(SubscriptionTypes.NEW_DAG_BLOCK);
-        // this.subscribe(SubscriptionTypes.NEW_DAG_BLOCK_FINALIZED);
+        this.subscribe(SubscriptionTypes.NEW_DAG_BLOCK_FINALIZED);
         // this.subscribe(SubscriptionTypes.NEW_PBFT_BLOCK);
         this.listen()
     }
@@ -86,16 +90,19 @@ export class WSClient {
                 const params = data.params;
                 if (this.subscriptionIds[params.subscription] === event) {
                     let result = params.result;
+                    // console.log(event, result);
                     if (event === SubscriptionTypes.NEW_DAG_BLOCK) {
-                        // result = DAGBlock.fromJSON(params.result);
-                        this.onGetBlock(params.result);
-
+                        //result = DAGBlock.fromJSON(params.result);
+                        this.onGetBlock(result);
+                        // console.log('NEW_DAG_BLOCK')
                         // console.log('new', result)
-                    } else if (event === SubscriptionTypes.NEW_DAG_BLOCK_FINALIZED) {
-                        result = DAGBlockFinalized.fromJSON(params.result);
-                        // console.log('final', result)
                     }
-                    callback(result);
+                    if (event === SubscriptionTypes.NEW_DAG_BLOCK_FINALIZED) {
+                        // result = DAGBlockFinalized.fromJSON(params.result);
+                        this.onBlockFinalized(result);
+                        //console.log('NEW_DAG_BLOCK_FINALIZED')
+                    }
+                    // callback(result);
                 }
             }
         });

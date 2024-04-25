@@ -26,6 +26,8 @@ export class TimeLine extends Container {
         });
 
         this.onChangeProc = (proc: number) => {
+            if (this.proc!=proc){
+            }
             this.proc = proc;
         }
 

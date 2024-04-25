@@ -48,7 +48,6 @@ import {TimeLine} from "./app/view/TimeLine";
     const gui = new dat.GUI(/*{ autoPlace: false }*/);
     gui.domElement.id = 'gui';
     gui.add(params, 'zoom', 0.1, 5, 0.01).onChange((value: any) => {
-        console.log(value);
         view.scale.set(value);
     });
 
@@ -77,39 +76,16 @@ import {TimeLine} from "./app/view/TimeLine";
     // return;
 
     const view = new MainView(app);
+    MyScale.resize();
     const model = new MainModel();
     const controller = new MainController();
 
-    const loadJsonData = async (url: string): Promise<any> => {
-        try {
-            const response = await fetch(url);
-            if (!response.ok) {
-            }
-            return await response.json() as any;
-        } catch (error) {
-            throw error;  // Перебрасываем ошибку дальше
-        }
-    };
+    model.init(view);
+    controller.init(model);
+    /*   app.ticker.add((time) => {
+           //view.update();
+       });*/
+
     MyScale.resize();
-    loadJsonData('data_1000.json').then(data => {
-
-        model.init(view);
-        controller.init(model);
-
-        for (let i = 0; i < 1; i++) {
-            //   controller.addTestBlock(data[i]);
-        }
-
-        MyScale.resize();
-        let t = 0;
-
-        app.ticker.add((time) => {
-            // if (t == 300) {
-            view.update();
-            t = 0;
-            // }
-            t++;
-        });
-    }).catch(error => {
-    });
+    // view.scale.set(1);
 })();

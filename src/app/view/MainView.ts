@@ -9,16 +9,17 @@ import {SectorHighlightView} from "./SectorHighlightView";
 import Config from "../../config/Config";
 import {TimeLine} from "./TimeLine";
 import {Logo} from "./ui/Logo";
+import {BlockView} from "./BlockView";
+import gsap from "gsap";
 
 export class MainView extends Container {
 
-    update: Function;
-    render: Function;
-    drawConnect: Function;
-    mapData: Map<number, TimelineSectorModel> = new Map<number, TimelineSectorModel>();
     updateData: Function;
     onRescale: Function;
+    update: Function;
+    drawConnect: Function;
 
+    mapData: Map<number, TimelineSectorModel> = new Map<number, TimelineSectorModel>();
     sectorsHighLights: SectorHighlightView[] = [];
     sectors: SectorView[] = [];
 
@@ -31,7 +32,7 @@ export class MainView extends Container {
 
         MyScale.setup(this, {
             scalePortrait: 0.6,
-            scaleLandscape: 0.8,
+            scaleLandscape: 0.6,
             onRescale: () => {
                 this.onRescale(app.screen.width, app.screen.height);
                 this.sectors.forEach((sector: SectorView) => {
@@ -74,19 +75,18 @@ export class MainView extends Container {
         let hexagonRadius = 50;
         let hexagonHeight = hexagonRadius * Math.sqrt(3);
         let hx = new Graphics();
-        /* hx.poly([
-             -hexagonRadius, 0,
-             -hexagonRadius / 2, hexagonHeight / 2,
-             hexagonRadius / 2, hexagonHeight / 2,
-             hexagonRadius, 0,
-             hexagonRadius / 2, -hexagonHeight / 2,
-             -hexagonRadius / 2, -hexagonHeight / 2,])
-             .fill(0x666666)
-             .stroke({width: 5, color: 0xffffff});*/
-
+        /*   hx.poly([
+               -hexagonRadius, 0,
+               -hexagonRadius / 2, hexagonHeight / 2,
+               hexagonRadius / 2, hexagonHeight / 2,
+               hexagonRadius, 0,
+               hexagonRadius / 2, -hexagonHeight / 2,
+               -hexagonRadius / 2, -hexagonHeight / 2,])
+               .fill(0x666666)
+               .stroke({width: 5, color: 0xffffff});
+  */
         hx.roundRect(0, 0, 200, 200, 25)
             .fill('#151824')
-        // this.addChild(hx);
         CustomTextures.textures.hex = app.renderer.generateTexture(hx);
 
         for (let i = 0; i < 100; i++) {
@@ -97,9 +97,7 @@ export class MainView extends Container {
             this.sectorsHighLights.push(shl);
 
             let sector = new SectorView(app);
-            sector.createUniformBlocks(1 + Math.floor(Math.random() * 16));
-            // sector.render();
-            sector.debug('Level:\r' + new Date().getTime());
+            sector.createUniformBlocks(16);
             sector.x = 400 * i;
             sector.y = 150;
             sector.vid = i;
@@ -111,105 +109,121 @@ export class MainView extends Container {
         this.on('onSector', (vid: number) => {
         });
 
-        let clear = () => {
-            for (let i = 0; i < this.sectors.length; i++) {
-                let sector = this.sectors[i];
-                cont.removeChild(sector);
-                sector.destroy()
-                sector = null;
-            }
-            /*          contLines.children.forEach((child: any) => {
-                          contLines.removeChild(child);
-                          child.destroy();
-                          child = null;
-                      })*/
-
-            contGraphics.children.forEach((child: Graphics) => {
-                // child.clear();
-                contGraphics.removeChild(child);
-            });
-
-            this.sectors = [];
-        }
         this.updateData = (viewMap: any) => {
             this.mapData = viewMap;
             this.update();
         }
 
-        function calculateDistance(x1: number, y1: number, x2: number, y2: number): number {
-            return Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2));
+        const drawArrow = (from: Point, to: Point, color: any) => {
+            const offset = 32;
+            const angle = Math.atan2(to.y - from.y, to.x - from.x);
+            const headLength = 25; // Длина "головы" стрелки
+            const headWidth = 13;
+            const endX = to.x - offset * Math.cos(angle);
+            const endY = to.y - offset * Math.sin(angle);
+
+            graphics.moveTo(endX, endY);
+            graphics.lineTo(endX - headLength * Math.cos(angle - Math.PI / headWidth), endY - headLength * Math.sin(angle - Math.PI / headWidth));
+            graphics.lineTo(endX - headLength * Math.cos(angle + Math.PI / headWidth), endY - headLength * Math.sin(angle + Math.PI / headWidth));
+            graphics.lineTo(endX, endY);
+            graphics.lineTo(endX - headLength * Math.cos(angle - Math.PI / headWidth), endY - headLength * Math.sin(angle - Math.PI / headWidth));
+
+            graphics.fill({color: color, alpha: 1});
+            graphics.stroke({color: color, width: 2});
+        };
+
+        const drawLine = (p1: Point, p2: Point, final:boolean) => {
+            graphics.moveTo(p1.x, p1.y);
+            graphics.lineTo(p2.x, p2.y);
+            if(final){
+                graphics.stroke({width: 6, color: Config.colors.yellow});
+                drawArrow(p2, p1, Config.colors.yellow);
+            }else{
+                graphics.stroke({width: 4, color: Config.colors.darkgreen});
+                drawArrow(p2, p1, Config.colors.darkgreen);
+            }
+
+
+        }
+        const tipsExist = (hash: string, tips: string[]) => {
+            for (let v = 0; v < tips.length; v++) {
+                if (hash == tips[v]) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        const findParent = (from: number, child: BlockView): BlockView => {
+            for (let i = 0; i < from; i++) {
+                let current = this.sectors[i];
+                for (let v = 0; v < current.blocks.length; v++) {
+                    let block = current.blocks[v];
+                    if (block.model) {
+                        if (block.model.hash == child.model.pivot || tipsExist(block.model.hash, child.model.tips)) {
+
+                            if (block.model.finalized) {
+                                block.tint = 0xffffff;
+                            }
+
+                            drawLine(new Point(200 + block.parent.parent.x, 550 + block.y), new Point(200 + child.parent.parent.x, 550 + child.y), block.model.finalized)
+
+                            return block;
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
         this.drawConnect = () => {
-            graphics.clear();
-            for (let i = 0; i < this.sectors.length; i++) {
+            for (let i = this.sectors.length - 1; i >= 0; i--) {
                 let current = this.sectors[i];
-                if (i - 1 < this.sectors.length - 1) {
-                    let prev = this.sectors[i - 1];
-                    if (prev && current) {
-                        for (let v = 0; v < current.blocks.length; v++) {
-                            let block = current.blocks[v];
-                            //  let pivot = block.model.pivot;
-                            for (let h = 0; h < prev.blocks.length; h++) {
-                                let blockPrev = prev.blocks[h];
-                                if (block.visible && blockPrev.visible) {
-                                    //       let hash = blockPrev.model.hash;
-                                    //  if (hash == pivot) {
-                                    graphics.fill({color: 0xffff0b, alpha: 0.5});
-                                    graphics.moveTo(current.x + 200, current.y + 400 + block.y);
-                                    graphics.lineTo(prev.x + 200, prev.y + 400 + blockPrev.y);
-                                    if (h == 0) {
-                                        graphics.stroke({width: 4, color: Config.colors.yellow});
-                                    } else {
-                                        graphics.stroke({width: 2, color: Config.colors.darkblue});
-                                    }
-
-                                    // contGraphics.addChild(graphics);
-                                    //}
-                                }
+                if (current.model) {
+                    for (let v = 0; v < current.blocks.length; v++) {
+                        let block = current.blocks[v];
+                        if (block.model) {
+                            if (i >= 0) {
+                                findParent(i, block);
                             }
                         }
                     }
                 }
             }
         }
-        this.onRescale = (w: number, h: number) => {
 
+        this.onRescale = (w: number, h: number) => {
             if (w > h) {
                 this.x = 760;
             } else {
                 this.x = 560;
             }
         }
+
+        Config.onCustomUpdate = () => {
+            graphics.clear();
+            this.drawConnect();
+        }
+
         this.update = () => {
+            graphics.clear();
             for (let i = 0; i < 100; i++) {
                 let sector = this.sectors[i];
+                sector.model = null;
                 sector.update();
             }
-            this.drawConnect();
-            return;
 
-            //  clear();
-
-            if (this.mapData) {
-                let i = 0;
-                for (const key of this.mapData.keys()) {
-                    let sectorModel: TimelineSectorModel = this.mapData.get(key);
-                    let sector = new SectorView(app);
-                    sector.model = sectorModel;
-                    sector.render();
-                    sector.debug(i + '\r' + key);
-                    sector.x = 400 * i;
-                    sector.y = 150;
-                    cont.addChild(sector);
-                    this.sectors.push(sector);
-                    i++;
-                }
-                timeline.onChangeProc((cont.x / (-cont.width)));
+            let i = 0;
+            for (const key of this.mapData.keys()) {
+                let sectorModel: TimelineSectorModel = this.mapData.get(key);
+                let sector = this.sectors[i];
+                sector.model = sectorModel;
+                sector.update();
+                i++;
             }
 
-            //  this.drawConnect();
+
+            this.drawConnect();
         }
-        this.drawConnect();
     }
 }
