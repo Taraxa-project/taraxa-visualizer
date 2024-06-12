@@ -22,7 +22,6 @@ export class MainController {
         }
         this.init = (model: MainModel) => {
             this.model = model;
-
             this.client = new WSClient('wss://ws.mainnet.taraxa.io', model.addBlock, model.onBlockFinalized);
         }
     }

@@ -26,7 +26,7 @@ export class TimeLine extends Container {
         });
 
         this.onChangeProc = (proc: number) => {
-            if (this.proc!=proc){
+            if (this.proc != proc) {
             }
             this.proc = proc;
         }
@@ -34,10 +34,11 @@ export class TimeLine extends Container {
         let sliderbar = new Container();
         this.addChild(sliderbar);
         const sliderWidth = Config.DEFAULT_WIDTH - Config.DEFAULT_WIDTH / 20;
-
-        const slider = new Graphics().rect(0, 0, sliderWidth, 10).fill({color: Config.colors.darkgreen});
+        const slider = new Container();
+        let pull = new Graphics().rect(0, 0, sliderWidth, 10).fill({color: Config.colors.darkgreen});
         slider.x = 0;
         slider.y = 0;
+        slider.addChild(pull);
 
         const handle = new Graphics().circle(0, 0, 30).fill({color: Config.colors.green});
         handle.y = slider.height / 2;
@@ -54,6 +55,8 @@ export class TimeLine extends Container {
         function onDragStart() {
             app.stage.eventMode = 'static';
             app.stage.addEventListener('pointermove', onDrag);
+
+
         }
 
         function onDragEnd(e: any) {
@@ -64,9 +67,16 @@ export class TimeLine extends Container {
         function onDrag(e: any) {
             const halfHandleWidth = handle.width / 2;
             handle.x = Math.max(halfHandleWidth, Math.min(slider.toLocal(e.global).x, sliderWidth - halfHandleWidth));
-            const t = (handle.x / sliderWidth) - 0.0375;
-            let value = -t * (main.cont.width + 1300) - 1920 / 2;
-            main.onTimeLineDrag(value, -t * (main.cont.width + 1300) - 1920 / 2)
+            const t = (handle.x / sliderWidth);// - 0.0375;
+            let value = -t * (main.cont.width) - 1920 / 2;
+            main.onTimeLineDrag(value)
         }
+
+        // const halfHandleWidth = handle.width / 2;
+        // handle.x = Math.max(halfHandleWidth, Math.min(slider.toLocal({x: 0, y: 0}).x, sliderWidth - halfHandleWidth));
+        // const t = (handle.x / sliderWidth);// - 0.0375;
+        // let value = -t * (main.cont.width) - 1920 / 2;
+        // console.log(handle.x, t, value);
+
     }
 }

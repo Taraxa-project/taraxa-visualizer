@@ -26,13 +26,14 @@ export class SectorHighlightView extends Container {
         app.stage.addChild(this);
 
         let obj = new Graphics();
-        obj.rect(0, -5000, 400, 10000)
-            .fill(0x666666,0)
+        obj.rect(0, -5000, Config.SECTOR_WIDTH, 10000)
+            .fill({color:0x666666,alpha:0})
         this.addChild(obj);
 
         let obj2 = new Graphics();
-        obj2.rect(0, -5000, 400, 10000)
-            .fill(0x292c3f)
+        obj2.rect(0, -5000, Config.SECTOR_WIDTH, 10000)
+          //  .fill(0x292c3f)
+            .fill({color:0x292c3f,alpha:1})
         this.addChild(obj2);
         obj2.alpha = 0;
 

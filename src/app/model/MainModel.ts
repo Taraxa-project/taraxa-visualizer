@@ -3,16 +3,16 @@ import {MainView} from "../view/MainView";
 import {BlockModel} from "./BlockModel";
 import {TimelineSectorModel} from "./TimelineSectorModel";
 import {Block} from "../view/misc/Block";
+import Config from "../../config/Config";
 
 export class MainModel {
     init: Function;
     addBlock: Function;
     onBlockFinalized: Function;
+    getParentBlock: Function;
     dataMap = new Map<number, TimelineSectorModel>();
     viewMap = new Map<number, TimelineSectorModel>();
     view: MainView;
-    getParentBlock: Function;
-
 
     constructor() {
         console.log('main model init');
@@ -21,7 +21,6 @@ export class MainModel {
         }
 
         this.getParentBlock = (block: BlockModel) => {
-            //this.viewMap
             let i = 0;
             for (const key of this.viewMap.keys()) {
                 let sectorModel: TimelineSectorModel = this.viewMap.get(key);
@@ -48,24 +47,7 @@ export class MainModel {
         }
 
         this.addBlock = (block: BlockModel) => {
-
-
-            //   this.debugBlocks.push(block)
-            /*  if (this.debugBlocks.length >= 1000) {
-
-                  const jsonData = JSON.stringify(this.debugBlocks, null, 2);
-
-                  const blob = new Blob([jsonData], {type: 'application/json'});
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = 'data_' + this.debugBlocks.length + '.json';
-                  a.click();
-                  return;
-
-              }*/
-
-            if (this.dataMap.size >= 100) {
+            if (this.dataMap.size >= Config.MAX_SECTORS) {
                 const firstKey = this.dataMap.keys().next().value;
                 this.dataMap.delete(firstKey);
             }
@@ -75,13 +57,14 @@ export class MainModel {
             } else {
                 sector = new TimelineSectorModel();
                 sector.id = block.level;
+                if (block.level == null) {
+                    console.log(block, block.level)
+                }
                 this.dataMap.set(block.level, sector);
             }
             sector.add(block);
             const sortedArray = Array.from(this.dataMap.entries()).sort((a, b) => a[0] - b[0]);
             this.viewMap = new Map(sortedArray);
-
-
             if (this.view) {
                 this.view.updateData(this.viewMap);
             }

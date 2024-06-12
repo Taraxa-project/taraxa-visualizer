@@ -17,35 +17,60 @@ import {TimeLine} from "./app/view/TimeLine";
     await app.init({
         roundPixels: true,
         resolution: 1,
-        antialias: true,
+        antialias: false,
         width: 1920,
         height: 1080,
-        background: '#151824',
+        // background: '#151824',
+        background: '#da32d7',
         preference: 'webgl',
     });
-    app.ticker.maxFPS = 60;
+    //app.ticker.maxFPS = 60;
 
     document.getElementById('canvas-game').appendChild(app.canvas);
     //@ts-ignore
-    globalThis.__PIXI_APP__ = app;
+   // globalThis.__PIXI_APP__ = app;
     MyScale.app = app;
     window.addEventListener('resize', MyScale.resize);
 
-    const blockTexture = await Assets.load('./block@4x_white.png');
-    CustomTextures.textures.blockTexture = blockTexture;
+    const textureFiles = [
+        'block@4x_white.png',
+        'block@4x_white_0.png',
+        'block@4x_white_1.png',
+        'block@4x_white_2.png',
+        'block@4x_white_3.png',
+        'block@4x_white_4.png'
+    ];
+
+    const textureKeys = [
+        'blockTexture',
+        'blockTexture0',
+        'blockTexture1',
+        'blockTexture2',
+        'blockTexture3',
+        'blockTexture4'
+    ];
+
+    const loadTextures = async () => {
+        for (let i = 0; i < textureFiles.length; i++) {
+            CustomTextures.textures[textureKeys[i]] = await Assets.load(`./${textureFiles[i]}`);
+        }
+    };
+
+    await loadTextures();
 
     const logo = await Assets.load({
-        src: './logo.svg', data: {
+        src: './logo.svg',
+        data: {
             parseAsGraphicsContext: false,
         }
     });
 
     CustomTextures.textures.logo = logo;
 
-    const params = {
-        zoom: 1.0,
+/*    const params = {
+        zoom: 2.0,
     };
-    const gui = new dat.GUI(/*{ autoPlace: false }*/);
+    const gui = new dat.GUI(/!*{ autoPlace: false }*!/);
     gui.domElement.id = 'gui';
     gui.add(params, 'zoom', 0.1, 5, 0.01).onChange((value: any) => {
         view.scale.set(value);
@@ -74,7 +99,7 @@ import {TimeLine} from "./app/view/TimeLine";
     // colors.open();
     gui.close()
     // return;
-
+*/
     const view = new MainView(app);
     MyScale.resize();
     const model = new MainModel();
@@ -82,10 +107,11 @@ import {TimeLine} from "./app/view/TimeLine";
 
     model.init(view);
     controller.init(model);
-    /*   app.ticker.add((time) => {
-           //view.update();
-       });*/
+    app.ticker.add((time) => {
+        view.update();
+        view.render();
+    });
 
     MyScale.resize();
-    // view.scale.set(1);
+    view.scale.set(1);
 })();

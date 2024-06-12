@@ -18,7 +18,7 @@ export class MainView extends Container {
     onRescale: Function;
     update: Function;
     drawConnect: Function;
-
+    render: Function;
     mapData: Map<number, TimelineSectorModel> = new Map<number, TimelineSectorModel>();
     sectorsHighLights: SectorHighlightView[] = [];
     sectors: SectorView[] = [];
@@ -31,8 +31,8 @@ export class MainView extends Container {
         app.stage.hitArea = app.screen;
 
         MyScale.setup(this, {
-            scalePortrait: 0.6,
-            scaleLandscape: 0.6,
+            scalePortrait: 1,
+            scaleLandscape: 1,
             onRescale: () => {
                 this.onRescale(app.screen.width, app.screen.height);
                 this.sectors.forEach((sector: SectorView) => {
@@ -54,6 +54,14 @@ export class MainView extends Container {
         contGraphics.addChild(graphics);
 
 
+        let contGraphicsFinal = new Container();
+        this.addChild(contGraphicsFinal);
+        contGraphicsFinal.x = -1920 / 2;
+        contGraphicsFinal.y = -1080 / 2;
+        const graphicsFinal = new Graphics();
+        contGraphicsFinal.addChild(graphicsFinal);
+
+
         let cont = new Container();
         this.addChild(cont);
         cont.x = -1920 / 2;
@@ -64,7 +72,7 @@ export class MainView extends Container {
         timeline.cont = cont;
 
         timeline.onTimeLineDrag = (value: number) => {
-            contHighlight.x = contGraphics.x = cont.x = value;
+            contHighlight.x = contGraphics.x = contGraphicsFinal.x = cont.x = -400 + value;
         }
 
         let circ = new Graphics()
@@ -89,22 +97,25 @@ export class MainView extends Container {
             .fill('#151824')
         CustomTextures.textures.hex = app.renderer.generateTexture(hx);
 
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < Config.MAX_SECTORS; i++) {
             let shl = new SectorHighlightView(app);
-            shl.x = 400 * i;
+            shl.x = Config.SECTOR_WIDTH * i;
             shl.y = 150;
             contHighlight.addChild(shl);
             this.sectorsHighLights.push(shl);
 
             let sector = new SectorView(app);
             sector.createUniformBlocks(16);
-            sector.x = 400 * i;
+            sector.x = Config.SECTOR_WIDTH * i;
             sector.y = 150;
             sector.vid = i;
             cont.addChild(sector);
             this.sectors.push(sector);
-            timeline.onChangeProc((cont.x / (-cont.width)));
+
+            //timeline.onChangeProc((cont.x / (-cont.width)));
+//            console.log('proc', (cont.x / (-cont.width)));
         }
+
 
         this.on('onSector', (vid: number) => {
         });
@@ -114,7 +125,7 @@ export class MainView extends Container {
             this.update();
         }
 
-        const drawArrow = (from: Point, to: Point, color: any) => {
+        const drawArrow = (graphics: Graphics, from: Point, to: Point, color: any) => {
             const offset = 32;
             const angle = Math.atan2(to.y - from.y, to.x - from.x);
             const headLength = 25; // Длина "головы" стрелки
@@ -131,21 +142,21 @@ export class MainView extends Container {
             graphics.fill({color: color, alpha: 1});
             graphics.stroke({color: color, width: 2});
         };
-
-        const drawLine = (p1: Point, p2: Point, final:boolean) => {
+        const drawLine = (graphics: Graphics, p1: Point, p2: Point, final: boolean) => {
             graphics.moveTo(p1.x, p1.y);
             graphics.lineTo(p2.x, p2.y);
-            if(final){
+            if (final) {
                 graphics.stroke({width: 6, color: Config.colors.yellow});
-                drawArrow(p2, p1, Config.colors.yellow);
-            }else{
-                graphics.stroke({width: 4, color: Config.colors.darkgreen});
-                drawArrow(p2, p1, Config.colors.darkgreen);
+                drawArrow(graphics, p2, p1, Config.colors.yellow);
+            } else {
+                graphics.stroke({width: 4, color: Config.colors.darkblue});
+                drawArrow(graphics, p2, p1, Config.colors.darkblue);
             }
 
 
         }
         const tipsExist = (hash: string, tips: string[]) => {
+            if (tips == null) return false;
             for (let v = 0; v < tips.length; v++) {
                 if (hash == tips[v]) {
                     return true;
@@ -153,21 +164,18 @@ export class MainView extends Container {
             }
             return false;
         }
-
         const findParent = (from: number, child: BlockView): BlockView => {
             for (let i = 0; i < from; i++) {
                 let current = this.sectors[i];
                 for (let v = 0; v < current.blocks.length; v++) {
                     let block = current.blocks[v];
-                    if (block.model) {
-                        if (block.model.hash == child.model.pivot || tipsExist(block.model.hash, child.model.tips)) {
-
+                    if (block.model && block.visible) {
+                        if (block.model.hash == child.model.pivot /*|| tipsExist(block.model.hash, child.model.tips)*/) {
                             if (block.model.finalized) {
                                 block.tint = 0xffffff;
                             }
-
-                            drawLine(new Point(200 + block.parent.parent.x, 550 + block.y), new Point(200 + child.parent.parent.x, 550 + child.y), block.model.finalized)
-
+                            if (child.visible)
+                                drawLine(block.model.finalized ? graphicsFinal : graphics, new Point(Config.SECTOR_WIDTH / 2 + block.parent.parent.x, 550 + block.y), new Point(Config.SECTOR_WIDTH / 2 + child.parent.parent.x, 550 + child.y), block.model.finalized)
                             return block;
                         }
                     }
@@ -175,7 +183,6 @@ export class MainView extends Container {
             }
             return null;
         }
-
         this.drawConnect = () => {
             for (let i = this.sectors.length - 1; i >= 0; i--) {
                 let current = this.sectors[i];
@@ -184,32 +191,47 @@ export class MainView extends Container {
                         let block = current.blocks[v];
                         if (block.model) {
                             if (i >= 0) {
-                                findParent(i, block);
+                                try {
+                                    findParent(i, block);
+                                } catch (e) {
+                                    console.log(e)
+                                }
+
                             }
                         }
                     }
                 }
             }
         }
-
         this.onRescale = (w: number, h: number) => {
-            if (w > h) {
-                this.x = 760;
-            } else {
-                this.x = 560;
-            }
+            /*  if (w > h) {
+                  this.x = 760;
+              } else {
+                  this.x = 560;
+              }
+              //FIXME
+              this.x = 0;*/
         }
 
         Config.onCustomUpdate = () => {
             graphics.clear();
+            graphicsFinal.clear();
             this.drawConnect();
         }
 
-        this.update = () => {
-            graphics.clear();
-            for (let i = 0; i < 100; i++) {
+        this.render = () => {
+            for (let i = 0; i < Config.MAX_SECTORS; i++) {
                 let sector = this.sectors[i];
-                sector.model = null;
+                sector.render();
+            }
+        }
+        this.update = () => {
+            // graphics.clear();
+            // graphicsFinal.clear();
+
+            for (let i = 0; i < Config.MAX_SECTORS; i++) {
+                let sector = this.sectors[i];
+                //  sector.model = null;
                 sector.update();
             }
 
@@ -218,12 +240,20 @@ export class MainView extends Container {
                 let sectorModel: TimelineSectorModel = this.mapData.get(key);
                 let sector = this.sectors[i];
                 sector.model = sectorModel;
-                sector.update();
                 i++;
             }
 
+            for (let i = 0; i < Config.MAX_SECTORS; i++) {
+                let sector = this.sectors[i];
+                // if (this.sectors[i + 1])
+                //     sector.nextSector = this.sectors[i + 1];
+                sector.update();
+            }
 
             this.drawConnect();
         }
+
+        contHighlight.x = contGraphics.x = contGraphicsFinal.x = cont.x = -400 - 965;
+
     }
 }
