@@ -60,7 +60,7 @@
     var script = document.createElement('script');
     script.onload = function () {
         var stats = new Stats();
-        stats.showPanel(2);
+        stats.showPanel(0);
         document.body.appendChild(stats.dom);
         requestAnimationFrame(function
             loop() {
@@ -71,6 +71,11 @@
     script.src = 'https://mrdoob.github.io/stats.js/build/stats.min.js';
     document.head.appendChild(script);
 })()
+
+document.oncontextmenu = document.body.oncontextmenu = function (event) {
+    event.preventDefault();
+}
+
 </script>
 <script type="text/javascript" src="./dat.gui.min.js"></script>
 <div id="canvas-game"></div>

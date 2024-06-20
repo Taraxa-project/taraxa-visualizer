@@ -10,8 +10,11 @@ export class MainModel {
     addBlock: Function;
     onBlockFinalized: Function;
     getParentBlock: Function;
+    getSectorByHash: Function;
+    getSectorByTips: Function;
     dataMap = new Map<number, TimelineSectorModel>();
-    viewMap = new Map<number, TimelineSectorModel>();
+    // viewMap = new Map<number, TimelineSectorModel>();
+    allBlocksMap = new Map<string, BlockModel>();
     view: MainView;
 
     constructor() {
@@ -21,52 +24,64 @@ export class MainModel {
         }
 
         this.getParentBlock = (block: BlockModel) => {
-            let i = 0;
-            for (const key of this.viewMap.keys()) {
-                let sectorModel: TimelineSectorModel = this.viewMap.get(key);
-                if (key == block.level) {
-                    break;
-                }
-                i++;
-            }
+            // let i = 0;
+            // for (const key of this.viewMap.keys()) {
+            //     let sectorModel: TimelineSectorModel = this.viewMap.get(key);
+            //     if (key == block.level) {
+            //         break;
+            //     }
+            //     i++;
+            // }
         }
 
         this.onBlockFinalized = (blockData: any) => {
-            if (this.dataMap) {
-                for (const key of this.dataMap.keys()) {
-                    let sector: TimelineSectorModel = this.dataMap.get(key);
-                    for (let i = 0; i < sector.blocks.length; i++) {
-                        let block: BlockModel = sector.blocks[i]
-                        if (block.hash == blockData.block) {
-                            block.finalized = true;
-                            return;
-                        }
-                    }
+            try {
+                if (this.allBlocksMap.has(blockData?.block)) {
+                    this.allBlocksMap.get(blockData.block).finalized = true;
                 }
+            } catch (e) {
+                console.log('onBlockFinalized error:', e, blockData);
             }
         }
 
+        this.getSectorByHash = (block: BlockModel): any => {
+            if (this.allBlocksMap.has(block.pivot)) {
+                return this.allBlocksMap.get(block.pivot);
+            }
+            return null;
+        }
+        this.getSectorByTips = (block: BlockModel): any => {
+            if (this.allBlocksMap.has(block.tips[0])) {
+                return this.allBlocksMap.get(block.tips[0]);
+            }
+            return null;
+        }
         this.addBlock = (block: BlockModel) => {
+            //  console.log(block)
+
+            this.allBlocksMap.set(block.hash, block);
+
             if (this.dataMap.size >= Config.MAX_SECTORS) {
                 const firstKey = this.dataMap.keys().next().value;
                 this.dataMap.delete(firstKey);
             }
+
             let sector;
             if (this.dataMap.has(block.level)) {
                 sector = this.dataMap.get(block.level);
             } else {
                 sector = new TimelineSectorModel();
                 sector.id = block.level;
-                if (block.level == null) {
-                    console.log(block, block.level)
-                }
                 this.dataMap.set(block.level, sector);
             }
+
             sector.add(block);
             const sortedArray = Array.from(this.dataMap.entries()).sort((a, b) => a[0] - b[0]);
-            this.viewMap = new Map(sortedArray);
+
+            this.dataMap = new Map(sortedArray);
+
             if (this.view) {
-                this.view.updateData(this.viewMap);
+                this.view.updateData(this);
             }
         }
     }

@@ -11,6 +11,7 @@ import {TimeLine} from "./TimeLine";
 import {Logo} from "./ui/Logo";
 import {BlockView} from "./BlockView";
 import gsap from "gsap";
+import {MainModel} from "../model/MainModel";
 
 export class MainView extends Container {
 
@@ -19,9 +20,14 @@ export class MainView extends Container {
     update: Function;
     drawConnect: Function;
     render: Function;
+
+    mainModel: MainModel;
     mapData: Map<number, TimelineSectorModel> = new Map<number, TimelineSectorModel>();
     sectorsHighLights: SectorHighlightView[] = [];
     sectors: SectorView[] = [];
+
+
+    test: number = 0;
 
     constructor(app: Application) {
         console.log('main view init');
@@ -120,8 +126,9 @@ export class MainView extends Container {
         this.on('onSector', (vid: number) => {
         });
 
-        this.updateData = (viewMap: any) => {
-            this.mapData = viewMap;
+        this.updateData = (model: MainModel) => {
+            this.mainModel = model;
+            this.mapData = model.dataMap;
             this.update();
         }
 
@@ -142,19 +149,19 @@ export class MainView extends Container {
             graphics.fill({color: color, alpha: 1});
             graphics.stroke({color: color, width: 2});
         };
+
         const drawLine = (graphics: Graphics, p1: Point, p2: Point, final: boolean) => {
             graphics.moveTo(p1.x, p1.y);
             graphics.lineTo(p2.x, p2.y);
             if (final) {
                 graphics.stroke({width: 6, color: Config.colors.yellow});
-                drawArrow(graphics, p2, p1, Config.colors.yellow);
+                drawArrow(graphics, p1, p2, Config.colors.yellow);
             } else {
                 graphics.stroke({width: 4, color: Config.colors.darkblue});
-                drawArrow(graphics, p2, p1, Config.colors.darkblue);
+                drawArrow(graphics, p1, p2, Config.colors.darkblue);
             }
-
-
         }
+
         const tipsExist = (hash: string, tips: string[]) => {
             if (tips == null) return false;
             for (let v = 0; v < tips.length; v++) {
@@ -164,42 +171,30 @@ export class MainView extends Container {
             }
             return false;
         }
-        const findParent = (from: number, child: BlockView): BlockView => {
-            for (let i = 0; i < from; i++) {
-                let current = this.sectors[i];
-                for (let v = 0; v < current.blocks.length; v++) {
-                    let block = current.blocks[v];
-                    if (block.model && block.visible) {
-                        if (block.model.hash == child.model.pivot /*|| tipsExist(block.model.hash, child.model.tips)*/) {
-                            if (block.model.finalized) {
-                                block.tint = 0xffffff;
-                            }
-                            if (child.visible)
-                                drawLine(block.model.finalized ? graphicsFinal : graphics, new Point(Config.SECTOR_WIDTH / 2 + block.parent.parent.x, 550 + block.y), new Point(Config.SECTOR_WIDTH / 2 + child.parent.parent.x, 550 + child.y), block.model.finalized)
-                            return block;
-                        }
-                    }
-                }
-            }
-            return null;
-        }
+
         this.drawConnect = () => {
             for (let i = this.sectors.length - 1; i >= 0; i--) {
                 let current = this.sectors[i];
-                if (current.model) {
-                    for (let v = 0; v < current.blocks.length; v++) {
-                        let block = current.blocks[v];
-                        if (block.model) {
-                            if (i >= 0) {
-                                try {
-                                    findParent(i, block);
-                                } catch (e) {
-                                    console.log(e)
-                                }
 
-                            }
+                if (current.model) {
+                    let arr = current.model.getBlocksArray();
+
+                    arr.forEach((bm: BlockModel) => {
+                        let prevBlockModel = this.mainModel.getSectorByHash(bm) ? this.mainModel.getSectorByHash(bm) : this.mainModel.getSectorByTips(bm);
+                        if (prevBlockModel && bm.view && prevBlockModel.view) {
+                            let block = bm.view;
+                            let child = prevBlockModel.view;
+                           // if (block.model.finalized) {
+                              //  block.tint = 0xffffff;
+                            //}
+                            drawLine(
+                                block.model.finalized ? graphicsFinal : graphics,
+                                new Point(Config.SECTOR_WIDTH / 2 + block.parent.parent.x, 550 + block.y),
+                                new Point(Config.SECTOR_WIDTH / 2 + child.parent.parent.x, 550 + child.y),
+                                block.model.finalized
+                            );
                         }
-                    }
+                    })
                 }
             }
         }
@@ -213,11 +208,11 @@ export class MainView extends Container {
               this.x = 0;*/
         }
 
-        Config.onCustomUpdate = () => {
+       /* Config.onCustomUpdate = () => {
             graphics.clear();
             graphicsFinal.clear();
             this.drawConnect();
-        }
+        }*/
 
         this.render = () => {
             for (let i = 0; i < Config.MAX_SECTORS; i++) {
@@ -225,35 +220,57 @@ export class MainView extends Container {
                 sector.render();
             }
         }
-        this.update = () => {
-            // graphics.clear();
-            // graphicsFinal.clear();
 
-            for (let i = 0; i < Config.MAX_SECTORS; i++) {
-                let sector = this.sectors[i];
-                //  sector.model = null;
-                sector.update();
-            }
+        this.update = () => {
+            graphics.clear();
+            graphicsFinal.clear();
+
+            // for (let i = 0; i < Config.MAX_SECTORS; i++) {
+            //     let sector = this.sectors[i];
+            //     //  sector.model = null;
+            //     sector.update();
+            // }
+
 
             let i = 0;
+
             for (const key of this.mapData.keys()) {
                 let sectorModel: TimelineSectorModel = this.mapData.get(key);
                 let sector = this.sectors[i];
+
                 sector.model = sectorModel;
-                i++;
-            }
+                sectorModel.view = sector;
 
-            for (let i = 0; i < Config.MAX_SECTORS; i++) {
-                let sector = this.sectors[i];
-                // if (this.sectors[i + 1])
-                //     sector.nextSector = this.sectors[i + 1];
                 sector.update();
-            }
 
+                /*
+                                let arr = sector.model.getBlocksArray();
+                                arr.forEach((bm: BlockModel) => {
+                                    let parentBlock = this.mainModel.getSectorByHash(bm);
+
+                                })*/
+                /*   if (block.model.hash == child.model.pivot /!*|| tipsExist(block.model.hash, child.model.tips)*!/) {
+                       if (block.model.finalized) {
+                           block.tint = 0xffffff;
+                       }
+                   if (child.visible)
+                       drawLine(block.model.finalized ? graphicsFinal : graphics, new Point(Config.SECTOR_WIDTH / 2 + block.parent.parent.x, 550 + block.y), new Point(Config.SECTOR_WIDTH / 2 + child.parent.parent.x, 550 + child.y), block.model.finalized)
+                   return block;
+               }*/
+
+
+                i++;
+
+
+            }
+            /*   for (let i = 0; i < Config.MAX_SECTORS; i++) {
+                   let sector = this.sectors[i];
+                   // if (this.sectors[i + 1])
+                   //     sector.nextSector = this.sectors[i + 1];
+                   sector.update();
+               }*/
             this.drawConnect();
         }
-
         contHighlight.x = contGraphics.x = contGraphicsFinal.x = cont.x = -400 - 965;
-
     }
 }

@@ -1,3 +1,6 @@
+import {BlockView} from "../view/BlockView";
+import {SectorView} from "../view/SectorView";
+
 export class BlockModel {
 
     hash: string;
@@ -6,6 +9,9 @@ export class BlockModel {
     tips: string[] = [];
     timestamp: number;
     finalized: boolean = false;
+    view:BlockView;
+    sector:SectorView;
+
 
     constructor(data: any) {
         this.hash = data.hash;
