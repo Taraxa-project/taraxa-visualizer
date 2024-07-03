@@ -4,7 +4,7 @@ export default class Config {
     //  static onCustomUpdate: Function;
     // static onCustomUpdate2: Function;
 
-    static MAX_SECTORS = 100;
+    static MAX_SECTORS = 15;
     static animateBlock = false;
     static animateBlockSurface = false;
     static colors = {

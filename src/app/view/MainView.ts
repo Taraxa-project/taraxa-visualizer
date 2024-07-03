@@ -36,7 +36,15 @@ export class MainView extends Container {
         app.stage.addChild(this);
         app.stage.hitArea = app.screen;
 
+
+        let obj = new Graphics();
+        obj.rect(0, -Config.DEFAULT_HEIGHT / 2, Config.DEFAULT_WIDTH, Config.DEFAULT_HEIGHT)
+        obj.stroke({width: 5, color: '0x00ff00'})
+        this.addChild(obj);
+
+
         MyScale.setup(this, {
+            left: 1,
             scalePortrait: 1,
             scaleLandscape: 1,
             onRescale: () => {
@@ -48,37 +56,39 @@ export class MainView extends Container {
         });
 
         let contHighlight = new Container();
-        this.addChild(contHighlight);
-        contHighlight.x = -1920 / 2;
-        contHighlight.y = -1080 / 2;
+        //  this.addChild(contHighlight);
+        contHighlight.x = -Config.DEFAULT_WIDTH / 2;
+        contHighlight.y = -Config.DEFAULT_HEIGHT / 2;
 
         let contGraphics = new Container();
         this.addChild(contGraphics);
-        contGraphics.x = -1920 / 2;
-        contGraphics.y = -1080 / 2;
+        contGraphics.x = -Config.DEFAULT_WIDTH / 2;
+        contGraphics.y = -Config.DEFAULT_HEIGHT / 2;
         const graphics = new Graphics();
         contGraphics.addChild(graphics);
 
 
         let contGraphicsFinal = new Container();
         this.addChild(contGraphicsFinal);
-        contGraphicsFinal.x = -1920 / 2;
-        contGraphicsFinal.y = -1080 / 2;
+        contGraphicsFinal.x = -Config.DEFAULT_WIDTH / 2;
+        contGraphicsFinal.y = -Config.DEFAULT_HEIGHT / 2;
         const graphicsFinal = new Graphics();
         contGraphicsFinal.addChild(graphicsFinal);
 
 
         let cont = new Container();
         this.addChild(cont);
-        cont.x = -1920 / 2;
-        cont.y = -1080 / 2;
+        cont.x = -Config.DEFAULT_WIDTH / 2;
+        cont.y = -Config.DEFAULT_HEIGHT / 2;
 
         const logoview = new Logo(app);
         const timeline = new TimeLine(app);
         timeline.cont = cont;
 
-        timeline.onTimeLineDrag = (value: number) => {
-            contHighlight.x = contGraphics.x = contGraphicsFinal.x = cont.x = -400 + value;
+        timeline.onTimeLineDrag = (proc: number) => {
+            let value = Math.floor(proc * (Config.SECTOR_WIDTH * 9 + Config.SECTOR_WIDTH / 2 - (Config.MAX_SECTORS) * Config.SECTOR_WIDTH));
+            console.log(Math.floor(proc), value);
+            contHighlight.x = contGraphics.x = contGraphicsFinal.x = cont.x = value + 10;
         }
 
         let circ = new Graphics()
@@ -104,20 +114,21 @@ export class MainView extends Container {
         CustomTextures.textures.hex = app.renderer.generateTexture(hx);
 
         for (let i = 0; i < Config.MAX_SECTORS; i++) {
-            let shl = new SectorHighlightView(app);
-            shl.x = Config.SECTOR_WIDTH * i;
-            shl.y = 150;
-            contHighlight.addChild(shl);
-            this.sectorsHighLights.push(shl);
+            // let shl = new SectorHighlightView(app);
+            // shl.x = Config.SECTOR_WIDTH * i;
+            // shl.y = 150;
+            // contHighlight.addChild(shl);
+            // this.sectorsHighLights.push(shl);
 
             let sector = new SectorView(app);
             sector.createUniformBlocks(16);
             sector.x = Config.SECTOR_WIDTH * i;
-            sector.y = 150;
+            sector.y = 150
             sector.vid = i;
+            sector.update()
+
             cont.addChild(sector);
             this.sectors.push(sector);
-
             //timeline.onChangeProc((cont.x / (-cont.width)));
 //            console.log('proc', (cont.x / (-cont.width)));
         }
@@ -184,15 +195,17 @@ export class MainView extends Container {
                         if (prevBlockModel && bm.view && prevBlockModel.view) {
                             let block = bm.view;
                             let child = prevBlockModel.view;
-                           // if (block.model.finalized) {
-                              //  block.tint = 0xffffff;
+                            // if (block.model.finalized) {
+                            //  block.tint = 0xffffff;
                             //}
-                            drawLine(
-                                block.model.finalized ? graphicsFinal : graphics,
-                                new Point(Config.SECTOR_WIDTH / 2 + block.parent.parent.x, 550 + block.y),
-                                new Point(Config.SECTOR_WIDTH / 2 + child.parent.parent.x, 550 + child.y),
-                                block.model.finalized
-                            );
+
+                            if (block.visible && child.visible)
+                                drawLine(
+                                    block.model.finalized ? graphicsFinal : graphics,
+                                    new Point(Config.SECTOR_WIDTH / 2 + block.parent.parent.x, 550 + block.y),
+                                    new Point(Config.SECTOR_WIDTH / 2 + child.parent.parent.x, 550 + child.y),
+                                    block.model.finalized
+                                );
                         }
                     })
                 }
@@ -208,11 +221,11 @@ export class MainView extends Container {
               this.x = 0;*/
         }
 
-       /* Config.onCustomUpdate = () => {
-            graphics.clear();
-            graphicsFinal.clear();
-            this.drawConnect();
-        }*/
+        /* Config.onCustomUpdate = () => {
+             graphics.clear();
+             graphicsFinal.clear();
+             this.drawConnect();
+         }*/
 
         this.render = () => {
             for (let i = 0; i < Config.MAX_SECTORS; i++) {
@@ -271,6 +284,7 @@ export class MainView extends Container {
                }*/
             this.drawConnect();
         }
-        contHighlight.x = contGraphics.x = contGraphicsFinal.x = cont.x = -400 - 965;
+
+        contHighlight.x = contGraphics.x = contGraphicsFinal.x = cont.x = 0;
     }
 }

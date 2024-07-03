@@ -12,6 +12,7 @@ import CustomTextures from "./utils/CustomTextures";
 import {Logo} from "./app/view/ui/Logo";
 import {TimeLine} from "./app/view/TimeLine";
 import gsap from "gsap";
+import TWEEN from "@tweenjs/tween.js";
 
 (async () => {
     const app = new Application();
@@ -104,8 +105,10 @@ import gsap from "gsap";
         gui.close()
         // return;
     */
+
     const view = new MainView(app);
     MyScale.resize();
+
     const model = new MainModel();
     const controller = new MainController();
 
@@ -115,6 +118,8 @@ import gsap from "gsap";
         view.update();
         view.render();
         //gsap.ticker.tick();
+
+        TWEEN.update();
     });
 
     // view.scale.set(1);

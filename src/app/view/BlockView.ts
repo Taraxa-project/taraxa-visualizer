@@ -24,10 +24,17 @@ export class BlockView extends Container {
         /*       const circ = new Sprite(CustomTextures.textures.circ);
                circ.anchor.set(0.5);
                this.addChild(circ)*/
-        const obj = new Sprite(CustomTextures.textures.hex);
+       /* const obj = new Sprite(CustomTextures.textures.hex);
         obj.anchor.set(0.5);
         obj.scale.set(0.298);
-        this.addChild(obj)
+        this.addChild(obj)*/
+
+
+
+        const img = new Sprite(CustomTextures.textures.blockTexture);
+        img.anchor.set(0.5);
+        img.scale.set(0.3);
+        this.addChild(img)
 
         /*
 

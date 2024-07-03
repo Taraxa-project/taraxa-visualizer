@@ -7,6 +7,7 @@ import gsap from "gsap";
 import Config from "../../config/Config";
 import * as Util from "util";
 import {BlockModel} from "../model/BlockModel";
+import TWEEN from '@tweenjs/tween.js';
 
 export class SectorView extends Container {
 
@@ -25,24 +26,19 @@ export class SectorView extends Container {
         super();
         app.stage.addChild(this);
 
-        /*   let obj = new Graphics();
-           obj.rect(0, -5000, 400, 10000)
-               .fill(0x666666, 0)
-           this.addChild(obj);
-
-           let obj2 = new Graphics();
-           obj2.rect(0, -5000, 400, 10000)
-               .fill(0x292c3f)
-           this.addChild(obj2);
-           obj2.alpha = 0;*/
+        let obj = new Graphics();
+        obj.rect(0, 0, Config.SECTOR_WIDTH, 850)
+        obj.stroke({width: 5, color:0x0000ff})
+        this.addChild(obj);
 
         let cont = new Container();
         this.addChild(cont);
         cont.y = 400;
 
         let basicText = new BitmapText();
-        basicText.x = Config.SECTOR_WIDTH / 4;
-        basicText.y = 850;
+        basicText.x = 80;
+        basicText.y = 50;
+        basicText.scale = 2;
         this.addChild(basicText);
 
         this.init = (model: TimelineSectorModel) => {
@@ -83,6 +79,7 @@ export class SectorView extends Container {
 
             for (let i = 0; i < this.blocks.length; i++) {
                 let block = this.blocks[i];
+
                 if (block.visible) {
                     totalVis++;
                     if (i % 2 == 0) {
@@ -96,17 +93,17 @@ export class SectorView extends Container {
             let startY = centerY - (tmp.length - 1) / 2 * spacingY;
             for (let i = 0; i < tmp.length; i++) {
                 let blockView = tmp[i];
-                //  if (needAnimation) {
-                //blockView.y = startY + i * spacingY;
-                gsap.to([blockView], {
-                    y: startY + i * spacingY,
-                    duration: d, // продолжительность анимации в секундах
-                    ease: "back.out"
-                });
-                // } else {
-                //    blockView.y = startY + i * spacingY;
-                //    Config.onCustomUpdate()
-                // }
+                if (!gsap.isTweening(blockView)) {
+                    if (blockView.y != startY + i * spacingY) {
+                        blockView.y = centerY;
+                        let finpos = startY + i * spacingY;
+                        gsap.to(blockView, {
+                            y: finpos,
+                            duration: d, // продолжительность анимации в секундах
+                            ease: "back.out"
+                        });
+                    }
+                }
             }
         }
 
@@ -122,7 +119,7 @@ export class SectorView extends Container {
             for (let i = 0; i < this.blocks.length; i++) {
                 let blockView = this.blocks[i];
                 blockView.visible = false;
-                blockView.y = 0;
+                // blockView.y = 0;
             }
 
             if (this.model) {
@@ -153,9 +150,12 @@ export class SectorView extends Container {
                   //   blockView.update();
                      blockView.visible = true;
                  }*/
-                // basicText.visible = true;
+
                 reposition();
             }
+
+            basicText.text = this.vid;
+            basicText.visible = true;
         }
 
         this.onRescale = (w: number, h: number) => {

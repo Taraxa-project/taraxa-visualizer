@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@pixi/app": "^7.4.2",
+    "@tweenjs/tween.js": "^23.1.2",
     "axios": "^1.2.1",
     "dat.gui": "^0.7.9",
     "filemanager-webpack-plugin": "^8.0.0",
