@@ -3,8 +3,7 @@ export default class Config {
     static DEFAULT_HEIGHT = 1080;
     //  static onCustomUpdate: Function;
     // static onCustomUpdate2: Function;
-
-    static MAX_SECTORS = 15;
+    static MAX_SECTORS = 100;
     static animateBlock = false;
     static animateBlockSurface = false;
     static colors = {
@@ -15,6 +14,6 @@ export default class Config {
         yellow: '#fdbf08',
         blockcolor: '#0d984d'
     }
-
+    static SECTOR_MOVE_SPEED = 0.5;
     static SECTOR_WIDTH = 200;
 }

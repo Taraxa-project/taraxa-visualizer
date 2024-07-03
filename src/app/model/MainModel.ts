@@ -61,8 +61,14 @@ export class MainModel {
 
             this.allBlocksMap.set(block.hash, block);
 
-            if (this.dataMap.size >= Config.MAX_SECTORS) {
+            if (this.dataMap.size >= Config.MAX_SECTORS + 1) {
                 const firstKey = this.dataMap.keys().next().value;
+                let sector = this.dataMap.get(firstKey);
+                for (const key of sector.blocksMap.keys()) {
+                    this.allBlocksMap.delete(key);
+                }
+                sector.blocksMap = null;
+                sector.view = null;
                 this.dataMap.delete(firstKey);
             }
 

@@ -61,10 +61,10 @@ export class WSClient {
         this.onBlockFinalized = onBlockFinalized;
 
         console.log('Connected to websocket server');
-        // this.on(SubscriptionTypes.NEW_DAG_BLOCK, (data: any) => {
-        // })
-        // this.on(SubscriptionTypes.NEW_DAG_BLOCK_FINALIZED, (data: any) => {
-        // })
+        this.on(SubscriptionTypes.NEW_DAG_BLOCK, (data: any) => {
+        })
+        this.on(SubscriptionTypes.NEW_DAG_BLOCK_FINALIZED, (data: any) => {
+        })
         // this.subscribe(SubscriptionTypes.NEW_HEADS);
         // this.subscribe(SubscriptionTypes.NEW_PENDING_TRANSACTIONS);
         this.subscribe(SubscriptionTypes.NEW_DAG_BLOCK);
@@ -72,7 +72,7 @@ export class WSClient {
         // this.subscribe(SubscriptionTypes.NEW_PBFT_BLOCK);
 
 
-        this.ws.addEventListener('message', (msg: MessageEvent) => {
+       /* this.ws.addEventListener('message', (msg: MessageEvent) => {
             const data = JSON.parse(msg.data);
             if (data.params && data.params.subscription) {
                 if (data.params.subscription == '0x1') {
@@ -84,21 +84,7 @@ export class WSClient {
                     this.onBlockFinalized(result);
                 }
             }
-            /* if (!data.method) {
-                 this.subscriptionIds[data.result] = this.subscriptions[data.id - 1];
-             }
-             if (data.method === 'eth_subscription') {
-                 const params = data.params;
-                 let result = params.result;
-
-                 // console.log(event, result);
-                 /!* if (event === SubscriptionTypes.NEW_DAG_BLOCK) {
-                      this.onGetBlock(result);
-                  } else if (event === SubscriptionTypes.NEW_DAG_BLOCK_FINALIZED) {
-                      this.onBlockFinalized(result);
-                  }*!/
-             }*/
-        });
+        });*/
 
 
         this.listen()
@@ -107,6 +93,7 @@ export class WSClient {
     subscribe(event: SubscriptionTypes) {
         this.subscriptions.push(event);
     }
+
 
     on(event: SubscriptionTypes, callback: (data: any) => void) {
         this.ws.addEventListener('message', (msg: MessageEvent) => {

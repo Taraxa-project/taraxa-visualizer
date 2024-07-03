@@ -21,14 +21,24 @@ export class SectorView extends Container {
     update: Function;
     render: Function;
     nextSector: SectorView;
+    clean: Function;
+
 
     constructor(app: Application) {
         super();
         app.stage.addChild(this);
 
+
+        this.clean = () => {
+            this.blocks.forEach((b) => {
+                b.clean();
+            })
+            this.blocks = [];
+        }
+
         let obj = new Graphics();
         obj.rect(0, 0, Config.SECTOR_WIDTH, 850)
-        obj.stroke({width: 5, color:0x0000ff})
+        obj.stroke({width: 5, color: 0x0000ff})
         this.addChild(obj);
 
         let cont = new Container();
@@ -54,6 +64,7 @@ export class SectorView extends Container {
                 let blockView = new BlockView(app);
                 blockView.debug(i);
                 blockView.vid = i;
+                blockView.view = this;
                 cont.addChild(blockView);
                 if (i % 2 == 0) {
                     this.blocks.push(blockView);
@@ -93,17 +104,22 @@ export class SectorView extends Container {
             let startY = centerY - (tmp.length - 1) / 2 * spacingY;
             for (let i = 0; i < tmp.length; i++) {
                 let blockView = tmp[i];
-                if (!gsap.isTweening(blockView)) {
-                    if (blockView.y != startY + i * spacingY) {
-                        blockView.y = centerY;
-                        let finpos = startY + i * spacingY;
-                        gsap.to(blockView, {
-                            y: finpos,
-                            duration: d, // продолжительность анимации в секундах
-                            ease: "back.out"
-                        });
-                    }
-                }
+
+
+                blockView.y = startY + i * spacingY;
+
+                /*
+                 if (!gsap.isTweening(blockView)) {
+                     if (blockView.y != startY + i * spacingY) {
+                         blockView.y = centerY;
+                         let finpos = startY + i * spacingY;
+                         gsap.to(blockView, {
+                             y: finpos,
+                             duration: d, // продолжительность анимации в секундах
+                             ease: "back.out"
+                         });
+                     }
+                 }*/
             }
         }
 
@@ -115,7 +131,9 @@ export class SectorView extends Container {
         }
 
         this.update = () => {
-
+            if (!this.model) {
+                return;
+            }
             for (let i = 0; i < this.blocks.length; i++) {
                 let blockView = this.blocks[i];
                 blockView.visible = false;
@@ -154,7 +172,8 @@ export class SectorView extends Container {
                 reposition();
             }
 
-            basicText.text = this.vid;
+            if (this.vid >= 0)
+                basicText.text = this.vid;
             basicText.visible = true;
         }
 

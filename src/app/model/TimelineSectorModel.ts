@@ -9,7 +9,7 @@ export class TimelineSectorModel {
     add: Function;
     id: number;
     blocksMap = new Map<string, BlockModel>();
-    view:SectorView;
+    view: SectorView;
 
     constructor() {
         this.add = (block: BlockModel) => {
@@ -22,9 +22,13 @@ export class TimelineSectorModel {
 
         this.getBlocksArray = () => {
             let arr = [];
-            for (const key of this.blocksMap.keys()) {
-                let blockModel: BlockModel = this.blocksMap.get(key);
-                arr.push(blockModel);
+            try {
+                for (const key of this.blocksMap.keys()) {
+                    let blockModel: BlockModel = this.blocksMap.get(key);
+                    arr.push(blockModel);
+                }
+            } catch (e) {
+                console.log(this.id, 'some error')
             }
             return arr;
         }
