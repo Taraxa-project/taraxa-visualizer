@@ -53,47 +53,34 @@ export class WSClient {
     } = {};
 
     onGetBlock: Function;
+    onNewHeads: Function;
     onBlockFinalized: Function;
 
-    constructor(url: string, onGetBlock: Function, onBlockFinalized: Function) {
+    constructor(url: string, onGetBlock: Function, onBlockFinalized: Function, onNewHeads: Function) {
         this.ws = new WebSocket(url);
         this.onGetBlock = onGetBlock;
         this.onBlockFinalized = onBlockFinalized;
+        this.onNewHeads = onNewHeads;
 
         console.log('Connected to websocket server');
         this.on(SubscriptionTypes.NEW_DAG_BLOCK, (data: any) => {
         })
         this.on(SubscriptionTypes.NEW_DAG_BLOCK_FINALIZED, (data: any) => {
         })
+        // this.on(SubscriptionTypes.NEW_HEADS, (data: any) => {
+        // })
+
         // this.subscribe(SubscriptionTypes.NEW_HEADS);
         // this.subscribe(SubscriptionTypes.NEW_PENDING_TRANSACTIONS);
         this.subscribe(SubscriptionTypes.NEW_DAG_BLOCK);
         this.subscribe(SubscriptionTypes.NEW_DAG_BLOCK_FINALIZED);
         // this.subscribe(SubscriptionTypes.NEW_PBFT_BLOCK);
-
-
-       /* this.ws.addEventListener('message', (msg: MessageEvent) => {
-            const data = JSON.parse(msg.data);
-            if (data.params && data.params.subscription) {
-                if (data.params.subscription == '0x1') {
-                    let result = data.params.result;
-                    this.onGetBlock(result);
-                }
-                if (data.params.subscription == '0x2') {
-                    let result = data.params.result;
-                    this.onBlockFinalized(result);
-                }
-            }
-        });*/
-
-
         this.listen()
     }
 
     subscribe(event: SubscriptionTypes) {
         this.subscriptions.push(event);
     }
-
 
     on(event: SubscriptionTypes, callback: (data: any) => void) {
         this.ws.addEventListener('message', (msg: MessageEvent) => {
@@ -111,6 +98,8 @@ export class WSClient {
                         this.onGetBlock(result);
                     } else if (event === SubscriptionTypes.NEW_DAG_BLOCK_FINALIZED) {
                         this.onBlockFinalized(result);
+                    } else if (event === SubscriptionTypes.NEW_HEADS) {
+                        this.onNewHeads(result);
                     }
                 }
             }

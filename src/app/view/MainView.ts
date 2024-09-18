@@ -14,6 +14,8 @@ import gsap from "gsap";
 import {MainModel} from "../model/MainModel";
 import {add} from "@tweenjs/tween.js";
 import {ZoomBar} from "./ZoomBar";
+import {SectorTimeLine} from "./SectorTimeLine";
+import {InfoView} from "./InfoView";
 
 export class MainView extends Container {
 
@@ -28,7 +30,6 @@ export class MainView extends Container {
     sectorsHighLights: SectorHighlightView[] = [];
     sectors: SectorView[] = [];
 
-
     test: number = 0;
 
     constructor(app: Application) {
@@ -37,28 +38,38 @@ export class MainView extends Container {
         super();
         let main = this;
 
+        let active = true;
         app.stage.addChild(this);
         app.stage.hitArea = app.screen;
 
         let obj = new Graphics();
         obj.rect(0, -Config.DEFAULT_HEIGHT / 2, Config.DEFAULT_WIDTH, Config.DEFAULT_HEIGHT)
-        obj.stroke({width: 5, color: '0x00ff00'})
+        // obj.stroke({width: 5, color: '0x00ff00'})
         this.addChild(obj);
+
+        let liner = new Graphics();
+        liner.rect(0, -Config.DEFAULT_HEIGHT / 2, Config.DEFAULT_WIDTH / 2, Config.DEFAULT_HEIGHT)
+        //  liner.stroke({width: 5, color: '0x00ff00'})
+        this.addChild(liner);
+
 
         MyScale.setup(this, {
             left: 1,
-            scalePortrait: 1,
+            scalePortrait: 2,
             scaleLandscape: 1,
             onRescale: () => {
                 this.onRescale(app.screen.width, app.screen.height);
                 this.sectors.forEach((sector: SectorView) => {
                     sector.onRescale(app.screen.width, app.screen.height);
                 })
+                this.sectorsHighLights.forEach((sector: SectorHighlightView) => {
+                    sector.onRescale(app.screen.width, app.screen.height);
+                })
             }
         });
 
         let contHighlight = new Container();
-        //  this.addChild(contHighlight);
+        this.addChild(contHighlight);
         contHighlight.x = -Config.DEFAULT_WIDTH / 2;
         contHighlight.y = -Config.DEFAULT_HEIGHT / 2;
 
@@ -82,15 +93,24 @@ export class MainView extends Container {
         cont.y = -Config.DEFAULT_HEIGHT / 2;
 
         const logoview = new Logo(app);
-        const timeline = new TimeLine(app);
+
+        /*     const timeline = new TimeLine(app);
+             timeline.cont = cont;*/
+
+        const timeline = new SectorTimeLine(app);
         timeline.cont = cont;
+        timeline.sectors = this.sectors;
+
         const zoomBar = new ZoomBar(app);
 
-        timeline.onTimeLineDrag = (proc: number) => {
-            let value = Math.floor(proc * (Config.SECTOR_WIDTH * 9 + Config.SECTOR_WIDTH / 2 - (this.sectors.length) * Config.SECTOR_WIDTH));
-            console.log(Math.floor(proc), value);
-            contHighlight.x = contGraphics.x = contGraphicsFinal.x = cont.x = value + 10;
-        }
+        //     const info = new InfoView(app);
+
+
+        /*  timeline.onTimeLineDrag = (proc: number) => {
+              let value = Math.floor(proc * (Config.SECTOR_WIDTH * 9 + Config.SECTOR_WIDTH / 2 - (this.sectors.length) * Config.SECTOR_WIDTH));
+              console.log(Math.floor(proc), value);
+              contHighlight.x = contGraphics.x = contGraphicsFinal.x = cont.x = value + 10;
+          }*/
 
         let circ = new Graphics()
         circ.circle(0, 0, 50);
@@ -115,109 +135,140 @@ export class MainView extends Container {
         CustomTextures.textures.hex = app.renderer.generateTexture(hx);
 
         let addSector = () => {
-
             for (const key of this.mapData.keys()) {
                 let sectorModel: TimelineSectorModel = this.mapData.get(key);
                 if (!sectorModel.view) {
                     let sector = new SectorView(app);
+                    // sector.on('onSector', (vid: number) => {
+                    //     console.log('onSector', vid);
+                    //     selectedSector = vid;
+                    //     active = false;
+                    //     moveSectorsTo();
+                    // });
                     sector.createUniformBlocks(16);
                     sector.x = Config.SECTOR_WIDTH * this.sectors.length;
                     sector.y = 150
                     cont.addChild(sector);
-
                     sector.model = sectorModel;
                     sectorModel.view = sector;
-
                     this.sectors.push(sector);
+
+                    let sectorHighlight = new SectorHighlightView(app);
+                    sectorHighlight.x = sector.x;
+                    sectorHighlight.y = sector.y;
+                    contHighlight.addChild(sectorHighlight);
+                    this.sectorsHighLights.push(sectorHighlight);
+
+                    sectorHighlight.on('onSector', (vid: number) => {
+                        selectedSector = vid;
+                        active = false;
+                        moveSectorsTo();
+                    });
+
                     sector.update()
                 }
             }
-
             if (this.sectors.length > Config.MAX_SECTORS) {
                 let first = this.sectors.shift();
                 first.model.view = null;
                 first.model = null;
-
-
                 gsap.to(first, {
                     x: -Config.SECTOR_WIDTH,
-                    duration: Config.SECTOR_MOVE_SPEED, // продолжительность анимации в секундах
+                    duration: 0, // продолжительность анимации в секундах
                     ease: "sine.out",
                     onComplete: () => {
                         cont.removeChild(first);
                         first.clean();
                         first.destroy();
                         first = null;
-
                     }
                 });
 
+                let firstHightlight = this.sectorsHighLights.shift();
+                gsap.to(firstHightlight, {
+                    x: -Config.SECTOR_WIDTH,
+                    duration: 0, // продолжительность анимации в секундах
+                    ease: "sine.out",
+                    onComplete: () => {
+                        contHighlight.removeChild(firstHightlight);
+                        firstHightlight.destroy();
+                        firstHightlight = null;
+                    }
+                });
 
                 for (let i = 0; i < this.sectors.length; i++) {
-
                     let s = this.sectors[i];
                     let f = i * Config.SECTOR_WIDTH;
-
                     gsap.to(s, {
                         x: f,
-                        duration: Config.SECTOR_MOVE_SPEED, // продолжительность анимации в секундах
+                        duration: 0, // продолжительность анимации в секундах
                         ease: "sine.out",
                     });
+
+                    gsap.to(this.sectorsHighLights[i], {
+                        x: f,
+                        duration: 0, // продолжительность анимации в секундах
+                        ease: "sine.out",
+                    });
+
                 }
 
             }
-        }
 
-        this.on('onSector', (vid: number) => {
-        });
+            selectedSector = selectedSector + 1;
+            if (selectedSector >= this.sectors.length) {
+                selectedSector = this.sectors.length - 1;
+            }
+
+            if (active) moveSectorsTo();
+
+            timeline.addSector();
+        }
 
         this.updateData = (model: MainModel) => {
             this.mainModel = model;
             this.mapData = model.dataMap;
-
             addSector();
-
             this.update();
         }
 
         const drawArrow = (graphics: Graphics, from: Point, to: Point, color: any) => {
             const offset = 32;
             const angle = Math.atan2(to.y - from.y, to.x - from.x);
-            const headLength = 25; // Длина "головы" стрелки
+
+            // Уменьшаем длину "головы" стрелки
+            const headLength = 15; // Например, 15 вместо 25
             const headWidth = 13;
+
+            // Позиция конца стрелки с учётом смещения
             const endX = to.x - offset * Math.cos(angle);
             const endY = to.y - offset * Math.sin(angle);
 
+            // Рисуем стрелку
             graphics.moveTo(endX, endY);
             graphics.lineTo(endX - headLength * Math.cos(angle - Math.PI / headWidth), endY - headLength * Math.sin(angle - Math.PI / headWidth));
             graphics.lineTo(endX - headLength * Math.cos(angle + Math.PI / headWidth), endY - headLength * Math.sin(angle + Math.PI / headWidth));
             graphics.lineTo(endX, endY);
             graphics.lineTo(endX - headLength * Math.cos(angle - Math.PI / headWidth), endY - headLength * Math.sin(angle - Math.PI / headWidth));
 
+            // Задаём цвет и уменьшаем толщину линии
             graphics.fill({color: color, alpha: 1});
-            graphics.stroke({color: color, width: 2});
+            graphics.stroke({color: color, width: 1}); // Толщина линии уменьшена до 1
         };
 
-        const drawLine = (graphics: Graphics, p1: Point, p2: Point, final: boolean) => {
+
+        const drawLine = (graphics: Graphics, p1: Point, p2: Point, final: boolean, pivot: boolean = false) => {
+            let color = final && Config.showFinalized ? Config.colors.white : Config.lines.tipColor;
+            if (pivot) {
+                color = final && Config.showFinalized ? Config.colors.white : Config.lines.pivotColor;
+            }
             graphics.moveTo(p1.x, p1.y);
             graphics.lineTo(p2.x, p2.y);
-            if (final) {
-                graphics.stroke({width: 6, color: Config.colors.yellow});
-                drawArrow(graphics, p1, p2, Config.colors.yellow);
-            } else {
-                graphics.stroke({width: 4, color: Config.colors.darkblue});
-                drawArrow(graphics, p1, p2, Config.colors.darkblue);
-            }
-        }
-
-        const tipsExist = (hash: string, tips: string[]) => {
-            if (tips == null) return false;
-            for (let v = 0; v < tips.length; v++) {
-                if (hash == tips[v]) {
-                    return true;
-                }
-            }
-            return false;
+            graphics.stroke({
+                width: pivot ? Config.lines.pivotWidth : Config.lines.tipWidth,
+                color: color
+            });
+            drawArrow(graphics, p1, p2, color);
         }
 
         this.drawConnect = () => {
@@ -228,51 +279,46 @@ export class MainView extends Container {
                     arr.forEach((bm: BlockModel) => {
 
                         if (bm && bm.view && bm.view.model) {
-                            let prevBlockModel: BlockModel = this.mainModel.getSectorByHash(bm) ? this.mainModel.getSectorByHash(bm) : this.mainModel.getSectorByTips(bm);
 
-                            if (prevBlockModel && prevBlockModel.sector && prevBlockModel.sector.model) {
-                                let block = bm.view;
-                                let prevBlock: BlockView = prevBlockModel.view;
-                                // if (block.model.finalized) {
-                                //  block.tint = 0xffffff;
-                                //}
+                            const links: BlockModel[] = [];
+                            const pivotBlock: BlockModel = this.mainModel.getSectorByHash(bm);
+                            if (pivotBlock) {
+                                links.push(pivotBlock)
+                            }
+                            const byTips: BlockModel[] = this.mainModel.getSectorByTips(bm);
+                            const totalLinks = links.concat(byTips);
+
+                            let block = bm.view;
+                            for (let i = 0; i < totalLinks.length; i++) {
+                                let prevBlock: BlockView = totalLinks[i].view;
                                 try {
                                     drawLine(
                                         block.model.finalized ? graphicsFinal : graphics,
                                         new Point(Config.SECTOR_WIDTH / 2 + block.view.x, 550 + block.y),
                                         new Point(Config.SECTOR_WIDTH / 2 + prevBlock.view.x, 550 + prevBlock.y),
-                                        block.model.finalized
+                                        block.model.finalized,
+                                        pivotBlock && i == 0 ? true : false
                                     );
                                 } catch (e) {
-                                    console.log(e, prevBlock)
+                                    //  console.log(e, prevBlock)
                                 }
+
                             }
                         }
                     })
                 }
             }
         }
-        this.onRescale = (w: number, h: number) => {
-            /*  if (w > h) {
-                  this.x = 760;
-              } else {
-                  this.x = 560;
-              }
-              //FIXME
-              this.x = 0;*/
-        }
 
-        /* Config.onCustomUpdate = () => {
-             graphics.clear();
-             graphicsFinal.clear();
-             this.drawConnect();
-         }*/
+        this.onRescale = (w: number, h: number) => {
+        }
 
         this.render = () => {
             for (let i = 0; i < this.sectors.length; i++) {
                 let sector = this.sectors[i];
                 sector.render();
             }
+            timeline.render();
         }
 
         this.update = () => {
@@ -283,24 +329,116 @@ export class MainView extends Container {
                 s.vid = i;
                 s.update();
             }
+            for (let i = 0; i < this.sectorsHighLights.length; i++) {
+                let s = this.sectorsHighLights[i];
+                s.vid = i;
+            }
             this.drawConnect();
+            repos();
         }
-        contHighlight.x = contGraphics.x = contGraphicsFinal.x = cont.x = 0;
 
-
+        contHighlight.x = contGraphics.x = contGraphicsFinal.x = cont.x = Config.DEFAULT_WIDTH / 2 - 100;
         let zoom = 1;
-        zoomBar.zoomIn = () => {
-            console.log('zoom in')
+        let selectedSector: number = 0;
+        let easeType = 'sine.out';
+
+        let repos = () => {
+        }
+        let reposVertical = () => {
+            contHighlight.y = contGraphics.y = contGraphicsFinal.y = cont.y = -Config.DEFAULT_HEIGHT * zoom / 2;
+            // let val = -Config.DEFAULT_HEIGHT * zoom / 2;
+            // let speed = Config.SECTOR_MOVE_SPEED / 2;
+            // gsap.to([
+            //     contHighlight,
+            //     contGraphics,
+            //     contGraphicsFinal,
+            //     cont
+            // ], {
+            //     y: val,
+            //     duration: speed, // продолжительность анимации в секундах
+            //     ease: easeType,
+            // });
+        }
+
+        let moveSectorsTo = (instant = false) => {
+            // contHighlight.x = contGraphics.x = contGraphicsFinal.x = cont.x = Config.DEFAULT_WIDTH / 2 - (selectedSector.x + 100) * zoom;
+            let val = Config.DEFAULT_WIDTH / 2 - (this.sectors[selectedSector].x + 100) * zoom;
+            let speed = Config.SECTOR_MOVE_SPEED;
+
+            if (active)
+                val = Config.DEFAULT_WIDTH - (this.sectors[selectedSector].x) * zoom;
+            else
+                val = Config.DEFAULT_WIDTH / 2 - (this.sectors[selectedSector].x + 100) * zoom;
+
+            if (instant)
+                speed = 0;
+            gsap.to([
+                contHighlight,
+                contGraphics,
+                contGraphicsFinal,
+                cont
+            ], {
+                x: val,
+                duration: speed, // продолжительность анимации в секундах
+                ease: easeType,
+            });
+        }
+
+        zoomBar.zoomIn = (instant = false) => {
+            if (this.sectors.length == 0)
+                return;
             zoom += 0.1;
-            main.scale.set(zoom)
+            contHighlight.scale = contGraphics.scale = contGraphicsFinal.scale = cont.scale = zoom;
+
+            // let speed = Config.SECTOR_MOVE_SPEED ;
+            // gsap.to([
+            //     contHighlight.scale,
+            //     contGraphics.scale,
+            //     contGraphicsFinal.scale,
+            //     cont.scale,
+            // ], {
+            //     x: zoom, y: zoom,
+            //     duration: speed, // продолжительность анимации в секундах
+            //     ease: easeType,
+            // });
+
+            timeline.onChangeZoom(zoom);
+            reposVertical();
+            moveSectorsTo(true);
         }
 
-        zoomBar.zoomOut = () => {
-            console.log('zoom out')
+        zoomBar.zoomOut = (instant = false) => {
+            if (this.sectors.length == 0)
+                return;
             zoom -= 0.1;
-            main.scale.set(zoom)
+            if (zoom <= 0.2) {
+                zoom = 0.2;
+            }
+            contHighlight.scale = contGraphics.scale = contGraphicsFinal.scale = cont.scale = zoom;
+            // let speed = Config.SECTOR_MOVE_SPEED / 2;
+            // gsap.to([
+            //     contHighlight.scale,
+            //     contGraphics.scale,
+            //     contGraphicsFinal.scale,
+            //     cont.scale,
+            // ], {
+            //     x: zoom,
+            //     y: zoom,
+            //     duration: speed, // продолжительность анимации в секундах
+            //     ease: easeType,
+            // });
+
+            timeline.onChangeZoom(zoom);
+
+            reposVertical();
+            moveSectorsTo(true);
         }
-
-
+        zoomBar.autoMove = (value = false) => {
+            active = value;
+            if(value){
+                selectedSector = this.sectors.length - 1;
+                moveSectorsTo(true);
+            }
+        }
     }
 }

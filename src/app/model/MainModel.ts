@@ -8,6 +8,7 @@ import Config from "../../config/Config";
 export class MainModel {
     init: Function;
     addBlock: Function;
+    onNewHeads: Function;
     onBlockFinalized: Function;
     getParentBlock: Function;
     getSectorByHash: Function;
@@ -43,18 +44,31 @@ export class MainModel {
                 console.log('onBlockFinalized error:', e, blockData);
             }
         }
-
+        this.onNewHeads = (blockData: any) => {
+            // try {
+            //     if (this.allBlocksMap.has(blockData?.block)) {
+            //         this.allBlocksMap.get(blockData.block).finalized = true;
+            //     }
+            // } catch (e) {
+            //     console.log('onBlockFinalized error:', e, blockData);
+            // }
+            console.log('onNewHeads :', blockData);
+        }
         this.getSectorByHash = (block: BlockModel): any => {
             if (this.allBlocksMap.has(block.pivot)) {
                 return this.allBlocksMap.get(block.pivot);
             }
             return null;
         }
-        this.getSectorByTips = (block: BlockModel): any => {
-            if (this.allBlocksMap.has(block.tips[0])) {
-                return this.allBlocksMap.get(block.tips[0]);
-            }
-            return null;
+        this.getSectorByTips = (block: BlockModel): BlockModel[] => {
+            const tips: BlockModel[] = [];
+            block.tips.forEach((tip: string) => {
+                const tipBlock: BlockModel = this.allBlocksMap.get(tip);
+                if (tipBlock) {
+                    tips.push(tipBlock)
+                }
+            })
+            return tips;
         }
         this.addBlock = (block: BlockModel) => {
             //  console.log(block)

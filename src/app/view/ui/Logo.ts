@@ -10,10 +10,10 @@ export class Logo extends Container {
         app.stage.addChild(this);
 
         MyScale.setup(this, {
-            scalePortrait: 1,
-            scaleLandscape: 1,
-            top: 50,
-            right: 120,
+            scalePortrait: 0.5,
+            scaleLandscape: 0.25,
+            top: 200,
+            right: 200,
             onRescale: () => {
             }
         });

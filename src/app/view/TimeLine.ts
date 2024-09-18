@@ -43,7 +43,7 @@ export class TimeLine extends Container {
         slider.y = 0;
         slider.addChild(pull);
 
-        const handleWave = new Graphics().circle(0, 0, 30).fill({color: Config.colors.yellow});
+        const handleWave = new Graphics().circle(0, 0, 30).fill({color: Config.colors.white});
         const handle = new Graphics().circle(0, 0, 30).fill({color: Config.colors.green});
 
         let dragger = new Container();

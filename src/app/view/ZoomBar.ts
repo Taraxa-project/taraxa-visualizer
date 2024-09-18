@@ -1,8 +1,9 @@
 import MyScale from "../../utils/MyScale";
-import {Application, Container, Graphics, Sprite} from "pixi.js";
+import {Application, BitmapText, Container, Graphics, Sprite} from "pixi.js";
 import CustomTextures from "../../utils/CustomTextures";
 import Config from "../../config/Config";
 import gsap from "gsap";
+import {CircleButton} from "./ui/CircleButton";
 
 export class ZoomBar extends Container {
 
@@ -13,18 +14,21 @@ export class ZoomBar extends Container {
 
     zoomIn: Function;
     zoomOut: Function;
+    autoMove: Function;
+    disableMove: Function;
+
     constructor(app: Application) {
 
         super();
         app.stage.addChild(this);
-
+        let autoplay = true;
         let main = this;
 
         MyScale.setup(this, {
             scalePortrait: 1,
-            scaleLandscape: 1,
-            bottom: 375,
-            right: 150,
+            scaleLandscape: 0.5,
+            bottom: 600,
+            right: 120,
             onRescale: () => {
             }
         });
@@ -35,28 +39,48 @@ export class ZoomBar extends Container {
             this.proc = proc;
         }
 
-        let sliderbar = new Container();
-        this.addChild(sliderbar);
 
-        let obj = new Graphics();
-        obj.rect(0, 0, 100, 100)
-            .fill(0x666666)
-            .stroke({width: 5, color: 0xffffff});
-        this.addChild(obj);
+        let zoomIn = new CircleButton(app);
+        this.addChild(zoomIn);
 
-        let obj2 = new Graphics();
-        obj2.rect(0, 100, 100, 100)
-            .fill(0x202020)
-            .stroke({width: 5, color: 0xffffff});
-        this.addChild(obj2);
-
-        obj.interactive = true;
-        obj.on('pointerdown', () => {
+        zoomIn.onClick = () => {
             main.zoomIn();
-        })
-        obj2.interactive = true;
-        obj2.on('pointerdown', () => {
+        }
+        zoomIn.addIcon('plus');
+
+        let zoomOut = new CircleButton(app);
+        this.addChild(zoomOut);
+        zoomOut.y = 150;
+        zoomOut.onClick = () => {
             main.zoomOut();
-        })
+        }
+        zoomOut.addIcon('minus');
+
+        let pauseBTn = new CircleButton(app);
+        this.addChild(pauseBTn);
+        pauseBTn.addIcon('pause');
+        pauseBTn.y = 300;
+        pauseBTn.onClick = () => {
+            autoplay = false;
+            playBtn.visible = true;
+            pauseBTn.visible = false;
+            main.autoMove(autoplay);
+        }
+
+        let playBtn = new CircleButton(app);
+        this.addChild(playBtn);
+        playBtn.addIcon('play');
+        playBtn.y = 300;
+        playBtn.onClick = () => {
+            autoplay = true;
+            playBtn.visible = false;
+            pauseBTn.visible = true;
+            main.autoMove(autoplay);
+        }
+        playBtn.visible = false;
+
+        this.disableMove = () => {
+            autoplay = false;
+        }
     }
 }

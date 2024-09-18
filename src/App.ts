@@ -2,7 +2,7 @@ import MyScale from "./utils/MyScale";
 import {MainView} from "./app/view/MainView";
 import {MainModel} from "./app/model/MainModel";
 import {MainController} from "./app/controller/MainController";
-import {Application, Assets, Ticker, UPDATE_PRIORITY} from "pixi.js";
+import {Application, Assets, Container, Ticker, UPDATE_PRIORITY} from "pixi.js";
 import {WSClient} from "./net/WSClient";
 import {BlockModel} from "./app/model/BlockModel";
 import * as dat from 'dat.gui';
@@ -18,12 +18,12 @@ import TWEEN from "@tweenjs/tween.js";
     const app = new Application();
     await app.init({
         roundPixels: true,
-        resolution: window.devicePixelRatio || 1,
+        resolution: 1, /*window.devicePixelRatio || 1,*/
         antialias: true,
         width: 1920,
         height: 1080,
-        // background: '#151824',
-        background: '#da32d7',
+        background: '#151824',
+        // background: '#da32d7',
         preference: 'webgl',
     });
     app.ticker.minFPS = 60;
@@ -37,91 +37,56 @@ import TWEEN from "@tweenjs/tween.js";
     MyScale.app = app;
     window.addEventListener('resize', MyScale.resize);
 
-    const textureFiles = [
-        'block@4x_white.png',
-        'block@4x_white_0.png',
-        'block@4x_white_1.png',
-        'block@4x_white_2.png',
-        'block@4x_white_3.png',
-        'block@4x_white_4.png'
-    ];
+    /* const textureFiles = [
+         'block@4x_white.png',
+         'block@4x_white_0.png',
+         'block@4x_white_1.png',
+         'block@4x_white_2.png',
+         'block@4x_white_3.png',
+         'block@4x_white_4.png'
+     ];
 
-    const textureKeys = [
-        'blockTexture',
-        'blockTexture0',
-        'blockTexture1',
-        'blockTexture2',
-        'blockTexture3',
-        'blockTexture4'
-    ];
+     const textureKeys = [
+         'blockTexture',
+         'blockTexture0',
+         'blockTexture1',
+         'blockTexture2',
+         'blockTexture3',
+         'blockTexture4'
+     ];*/
+    // Assets.addBundle('fonts', [
+    //     {alias: 'Inter-Regular', src: './fonts/static/Inter-Regular.ttf'},
+    // ]);
+    //
+    // await Assets.loadBundle('fonts');
 
-    const loadTextures = async () => {
-        for (let i = 0; i < textureFiles.length; i++) {
-            CustomTextures.textures[textureKeys[i]] = await Assets.load(`./${textureFiles[i]}`);
-        }
-    };
+    /*   const loadTextures = async () => {
+           for (let i = 0; i < textureFiles.length; i++) {
+               CustomTextures.textures[textureKeys[i]] = await Assets.load(`./${textureFiles[i]}`);
+           }
+       };
 
-    await loadTextures();
-
+       await loadTextures();
+   */
     const logo = await Assets.load({
-        src: './logo.svg',
-        data: {
-            parseAsGraphicsContext: false,
-        }
+        src: './logo_min.png',
+        /* data: {
+             parseAsGraphicsContext: false,
+         }*/
     });
 
     CustomTextures.textures.logo = logo;
 
-    /*    const params = {
-            zoom: 2.0,
-        };
-        const gui = new dat.GUI(/!*{ autoPlace: false }*!/);
-        gui.domElement.id = 'gui';
-        gui.add(params, 'zoom', 0.1, 5, 0.01).onChange((value: any) => {
-            view.scale.set(value);
-        });
-
-        const colors = gui.addFolder('Color');
-        colors.addColor(Config.colors, 'green').onChange((value: any) => {
-            console.log(value);
-        });
-        colors.addColor(Config.colors, 'darkgreen').onChange((value: any) => {
-            console.log(value);
-        });
-        colors.addColor(Config.colors, 'darkback').onChange((value: any) => {
-            app.renderer.background.color = Config.colors.darkback;
-        });
-        colors.addColor(Config.colors, 'darkblue').onChange((value: any) => {
-            console.log(value);
-        });
-        colors.addColor(Config.colors, 'yellow').onChange((value: any) => {
-            console.log(value);
-        });
-        colors.addColor(Config.colors, 'blockcolor').onChange((value: any) => {
-            Config.colors.blockcolor = value;
-        });
-        // gui.open();
-        // colors.open();
-        gui.close()
-        // return;
-    */
-
     const view = new MainView(app);
-    MyScale.resize();
-
     const model = new MainModel();
     const controller = new MainController();
-
     model.init(view);
     controller.init(model);
+
     app.ticker.add((time) => {
         view.update();
         view.render();
-        //gsap.ticker.tick();
-
         TWEEN.update();
     });
-
-    // view.scale.set(1);
     MyScale.resize();
 })();
