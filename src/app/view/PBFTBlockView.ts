@@ -9,7 +9,7 @@ import gsap from "gsap";
 import {SectorView} from "./SectorView";
 import {MainController} from "../controller/MainController";
 
-export class BlockView extends Container {
+export class PBFTBlockView extends Container {
 
     view: SectorView;
     vid: number;
@@ -79,7 +79,7 @@ export class BlockView extends Container {
         this.debug = (value: number) => {
         }
 
-        obj.tint = Config.colors.blockInactive;
+        obj.tint = Config.colors.PBFTBlock;
 
         this.moveTo = (pos: number) => {
             if (fin != pos) {

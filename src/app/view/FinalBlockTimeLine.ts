@@ -4,6 +4,8 @@ import CustomTextures from "../../utils/CustomTextures";
 import Config from "../../config/Config";
 import gsap from "gsap";
 import {SectorView} from "./SectorView";
+import {BlockView} from "./BlockView";
+import {PBFTBlockView} from "./PBFTBlockView";
 
 export class FinalBlockTimeLine extends Container {
 
@@ -44,20 +46,19 @@ export class FinalBlockTimeLine extends Container {
             for (let i = 0; i < labels.length; i++) {
                 let basicText = labels[i];
                 basicText.visible = true;
+                basicText.scale.x = zoom;
+                basicText.scale.y = zoom;
 
-                basicText.scale.x = 1 / zoom;
-                basicText.scale.y = 1 / zoom;
-
-                if (zoom < 1) {
-                    basicText.visible = false;
-                    if (i % 2 == 0 && zoom >= 0.6 && zoom < 1) {
-                        basicText.visible = true;
-                    } else if (i % 6 == 0 && zoom >= 0.3 && zoom < 0.6) {
-                        basicText.visible = true;
-                    } else if (i % 8 == 0 && zoom >= 0 && zoom < 0.3) {
-                        basicText.visible = true;
-                    }
-                }
+                /*  if (zoom < 1) {
+                      basicText.visible = false;
+                      if (i % 2 == 0 && zoom >= 0.6 && zoom < 1) {
+                          basicText.visible = true;
+                      } else if (i % 6 == 0 && zoom >= 0.3 && zoom < 0.6) {
+                          basicText.visible = true;
+                      } else if (i % 8 == 0 && zoom >= 0 && zoom < 0.3) {
+                          basicText.visible = true;
+                      }
+                  }*/
             }
         }
 
@@ -69,23 +70,16 @@ export class FinalBlockTimeLine extends Container {
                 basicText.text = sector.model.id;
             }
         }
-        const style = new TextStyle({
-            fontFamily: 'Inter',
-            fontSize: 30,
-            fill: "#ffffff",
-            wordWrap: false,
-            wordWrapWidth: 440,
-        });
 
         this.addSector = (sector: SectorView) => {
             if (this.sectors.length > Config.MAX_SECTORS) {
                 updateLabels();
                 return;
             }
-            let basicText: any = new Text({style});
-            basicText.anchor.set(0.5);
-            cont.addChild(basicText);
-            labels.push(basicText);
+
+            let blockView = new PBFTBlockView(app);
+            cont.addChild(blockView);
+            labels.push(blockView);
             updateLabels();
             updateZoom();
         }

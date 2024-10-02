@@ -14,13 +14,16 @@ export default class Config {
         darkblue: '#31364b',
         yellow: '#fdbf08',
         blockcolor: '#0d984d',
-        white: '#ffffff'
+        white: '#ffffff',
+        blockInactive: '#a8a8a8',
+        blockActive: '#0d984d',
+        PBFTBlock:'#59b0ff',
     }
     static lines = {
         pivotWidth: 1,
-        tipWidth: 0.6,
-        pivotColor:Config.colors.darkblue,
-        tipColor:Config.colors.darkbacklight,
+        tipWidth: 1,
+        pivotColor: '#464646',
+        tipColor: '#a8a8a8'
     }
 
     static showFinalized = !true;

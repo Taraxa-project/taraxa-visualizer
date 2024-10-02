@@ -16,6 +16,7 @@ import {add} from "@tweenjs/tween.js";
 import {ZoomBar} from "./ZoomBar";
 import {SectorTimeLine} from "./SectorTimeLine";
 import {InfoView} from "./InfoView";
+import {FinalBlockTimeLine} from "./FinalBlockTimeLine";
 
 export class MainView extends Container {
 
@@ -101,6 +102,10 @@ export class MainView extends Container {
         timeline.cont = cont;
         timeline.sectors = this.sectors;
 
+        const timelineBlocks = new FinalBlockTimeLine(app);
+        timelineBlocks.cont = cont;
+        timelineBlocks.sectors = this.sectors;
+
         const zoomBar = new ZoomBar(app);
 
         //     const info = new InfoView(app);
@@ -117,21 +122,9 @@ export class MainView extends Container {
         circ.fill(0xffffff)
         CustomTextures.textures.circ = app.renderer.generateTexture(circ);
 
-        let hexagonRadius = 50;
-        let hexagonHeight = hexagonRadius * Math.sqrt(3);
         let hx = new Graphics();
-        /*   hx.poly([
-               -hexagonRadius, 0,
-               -hexagonRadius / 2, hexagonHeight / 2,
-               hexagonRadius / 2, hexagonHeight / 2,
-               hexagonRadius, 0,
-               hexagonRadius / 2, -hexagonHeight / 2,
-               -hexagonRadius / 2, -hexagonHeight / 2,])
-               .fill(0x666666)
-               .stroke({width: 5, color: 0xffffff});
-  */
-        hx.roundRect(0, 0, 200, 200, 25)
-            .fill('#151824')
+        hx.rect(0, 0, 80, 80)
+            .fill(Config.colors.blockInactive)
         CustomTextures.textures.hex = app.renderer.generateTexture(hx);
 
         let addSector = () => {
@@ -223,6 +216,7 @@ export class MainView extends Container {
             if (active) moveSectorsTo();
 
             timeline.addSector();
+            timelineBlocks.addSector();
         }
 
         this.updateData = (model: MainModel) => {
@@ -319,6 +313,7 @@ export class MainView extends Container {
                 sector.render();
             }
             timeline.render();
+            timelineBlocks.render();
         }
 
         this.update = () => {
@@ -403,6 +398,8 @@ export class MainView extends Container {
             // });
 
             timeline.onChangeZoom(zoom);
+            timelineBlocks.onChangeZoom(zoom);
+
             reposVertical();
             moveSectorsTo(true);
         }
@@ -429,13 +426,13 @@ export class MainView extends Container {
             // });
 
             timeline.onChangeZoom(zoom);
-
+            timelineBlocks.onChangeZoom(zoom);
             reposVertical();
             moveSectorsTo(true);
         }
         zoomBar.autoMove = (value = false) => {
             active = value;
-            if(value){
+            if (value) {
                 selectedSector = this.sectors.length - 1;
                 moveSectorsTo(true);
             }
