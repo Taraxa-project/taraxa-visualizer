@@ -45,7 +45,6 @@ export class SectorHighlightView extends Container {
 
         obj.interactive = true;
         obj.on('pointerdown', () => {
-            console.log('sector on pointerdown')
             this.emit('onSector', this.vid);
         })
 

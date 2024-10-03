@@ -19,6 +19,7 @@ export class BlockView extends Container {
     render: Function;
     clean: Function;
     moveTo: Function;
+    forceGreen: Function;
 
     constructor(app: Application) {
         super();
@@ -111,12 +112,18 @@ export class BlockView extends Container {
         basicText2.y = basicText.y + 30;
 
         this.render = () => {
-           /* if (this.model?.finalized && !colored && Config.showFinalized) {
+            if (this.view?.finalized && !colored) {
                 colored = true;
-                obj.tint = Config.colors.white;
-            }*/
+                obj.tint = Config.colors.blockActive;
+            }
         }
 
+        this.forceGreen = () => {
+            if (!colored) {
+                colored = true;
+                obj.tint = Config.colors.blockActive;
+            }
+        }
         this.update = () => {
             if (this.model) {
                 basicText.text = this.model.hash.slice(0, 5);

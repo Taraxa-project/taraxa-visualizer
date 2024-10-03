@@ -44,10 +44,8 @@ export class SectorTimeLine extends Container {
             for (let i = 0; i < labels.length; i++) {
                 let basicText = labels[i];
                 basicText.visible = true;
-
                 basicText.scale.x = 1 / zoom;
                 basicText.scale.y = 1 / zoom;
-
                 if (zoom < 1) {
                     basicText.visible = false;
                     if (i % 2 == 0 && zoom >= 0.6 && zoom < 1) {

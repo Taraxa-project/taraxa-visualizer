@@ -17,6 +17,7 @@ import {ZoomBar} from "./ZoomBar";
 import {SectorTimeLine} from "./SectorTimeLine";
 import {InfoView} from "./InfoView";
 import {FinalBlockTimeLine} from "./FinalBlockTimeLine";
+import DrawUtil from "../../utils/DrawUtil";
 
 export class MainView extends Container {
 
@@ -197,15 +198,12 @@ export class MainView extends Container {
                         duration: 0, // продолжительность анимации в секундах
                         ease: "sine.out",
                     });
-
                     gsap.to(this.sectorsHighLights[i], {
                         x: f,
                         duration: 0, // продолжительность анимации в секундах
                         ease: "sine.out",
                     });
-
                 }
-
             }
 
             selectedSector = selectedSector + 1;
@@ -226,45 +224,6 @@ export class MainView extends Container {
             this.update();
         }
 
-        const drawArrow = (graphics: Graphics, from: Point, to: Point, color: any) => {
-            const offset = 32;
-            const angle = Math.atan2(to.y - from.y, to.x - from.x);
-
-            // Уменьшаем длину "головы" стрелки
-            const headLength = 15; // Например, 15 вместо 25
-            const headWidth = 13;
-
-            // Позиция конца стрелки с учётом смещения
-            const endX = to.x - offset * Math.cos(angle);
-            const endY = to.y - offset * Math.sin(angle);
-
-            // Рисуем стрелку
-            graphics.moveTo(endX, endY);
-            graphics.lineTo(endX - headLength * Math.cos(angle - Math.PI / headWidth), endY - headLength * Math.sin(angle - Math.PI / headWidth));
-            graphics.lineTo(endX - headLength * Math.cos(angle + Math.PI / headWidth), endY - headLength * Math.sin(angle + Math.PI / headWidth));
-            graphics.lineTo(endX, endY);
-            graphics.lineTo(endX - headLength * Math.cos(angle - Math.PI / headWidth), endY - headLength * Math.sin(angle - Math.PI / headWidth));
-
-            // Задаём цвет и уменьшаем толщину линии
-            graphics.fill({color: color, alpha: 1});
-            graphics.stroke({color: color, width: 1}); // Толщина линии уменьшена до 1
-        };
-
-
-        const drawLine = (graphics: Graphics, p1: Point, p2: Point, final: boolean, pivot: boolean = false) => {
-            let color = final && Config.showFinalized ? Config.colors.white : Config.lines.tipColor;
-            if (pivot) {
-                color = final && Config.showFinalized ? Config.colors.white : Config.lines.pivotColor;
-            }
-            graphics.moveTo(p1.x, p1.y);
-            graphics.lineTo(p2.x, p2.y);
-            graphics.stroke({
-                width: pivot ? Config.lines.pivotWidth : Config.lines.tipWidth,
-                color: color
-            });
-            drawArrow(graphics, p1, p2, color);
-        }
-
         this.drawConnect = () => {
             for (let i = this.sectors.length - 1; i >= 0; i--) {
                 let current = this.sectors[i];
@@ -273,7 +232,6 @@ export class MainView extends Container {
                     arr.forEach((bm: BlockModel) => {
 
                         if (bm && bm.view && bm.view.model) {
-
                             const links: BlockModel[] = [];
                             const pivotBlock: BlockModel = this.mainModel.getSectorByHash(bm);
                             if (pivotBlock) {
@@ -281,12 +239,11 @@ export class MainView extends Container {
                             }
                             const byTips: BlockModel[] = this.mainModel.getSectorByTips(bm);
                             const totalLinks = links.concat(byTips);
-
                             let block = bm.view;
                             for (let i = 0; i < totalLinks.length; i++) {
                                 let prevBlock: BlockView = totalLinks[i].view;
                                 try {
-                                    drawLine(
+                                    DrawUtil.drawLine(
                                         block.model.finalized ? graphicsFinal : graphics,
                                         new Point(Config.SECTOR_WIDTH / 2 + block.view.x, 550 + block.y),
                                         new Point(Config.SECTOR_WIDTH / 2 + prevBlock.view.x, 550 + prevBlock.y),
@@ -317,19 +274,36 @@ export class MainView extends Container {
         }
 
         this.update = () => {
+
             graphics.clear();
             graphicsFinal.clear();
+
+            let max = 0;
             for (let i = 0; i < this.sectors.length; i++) {
                 let s = this.sectors[i];
                 s.vid = i;
                 s.update();
+
+                if (s.finalized) {
+                    max = i;
+                }
             }
+
+            for (let i = 0; i < max; i++) {
+                let s = this.sectors[i];
+                s.blocks.forEach((b: BlockView) => {
+                    b.forceGreen();
+                })
+                s.update();
+            }
+
             for (let i = 0; i < this.sectorsHighLights.length; i++) {
                 let s = this.sectorsHighLights[i];
                 s.vid = i;
             }
             this.drawConnect();
             repos();
+            timelineBlocks.render();
         }
 
         contHighlight.x = contGraphics.x = contGraphicsFinal.x = cont.x = Config.DEFAULT_WIDTH / 2 - 100;
@@ -403,7 +377,6 @@ export class MainView extends Container {
             reposVertical();
             moveSectorsTo(true);
         }
-
         zoomBar.zoomOut = (instant = false) => {
             if (this.sectors.length == 0)
                 return;

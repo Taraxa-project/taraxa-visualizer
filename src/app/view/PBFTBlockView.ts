@@ -19,6 +19,9 @@ export class PBFTBlockView extends Container {
     render: Function;
     clean: Function;
     moveTo: Function;
+    obj: any;
+    hashPBFT: string;
+    setHashPBFT: Function;
 
     constructor(app: Application) {
         super();
@@ -32,6 +35,8 @@ export class PBFTBlockView extends Container {
         let colored = false;
 
         const obj = new Sprite(CustomTextures.textures.hex);
+
+        this.obj = obj;
         obj.anchor.set(0.5);
         // obj.scale.set(0.298);
         this.addChild(obj)
@@ -111,10 +116,17 @@ export class PBFTBlockView extends Container {
         basicText2.y = basicText.y + 30;
 
         this.render = () => {
-           /* if (this.model?.finalized && !colored && Config.showFinalized) {
-                colored = true;
-                obj.tint = Config.colors.white;
-            }*/
+            /* if (this.model?.finalized && !colored && Config.showFinalized) {
+                 colored = true;
+                 obj.tint = Config.colors.white;
+             }*/
+        }
+
+        this.setHashPBFT = () => {
+            if (this.hashPBFT) {
+                basicText.text = this.hashPBFT.slice(0, 5);
+                basicText2.text = "..." + this.hashPBFT.slice(-3);
+            }
         }
 
         this.update = () => {
