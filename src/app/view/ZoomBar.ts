@@ -1,15 +1,12 @@
 import MyScale from "../../utils/MyScale";
-import {Application, BitmapText, Container, Graphics, Sprite} from "pixi.js";
-import CustomTextures from "../../utils/CustomTextures";
-import Config from "../../config/Config";
-import gsap from "gsap";
+import {Application, Container} from "pixi.js";
 import {CircleButton} from "./ui/CircleButton";
 
 export class ZoomBar extends Container {
 
     onChangeProc: Function;
-    onTimeLineDrag: Function;
-    cont: Container;
+
+
     proc: number;
 
     zoomIn: Function;

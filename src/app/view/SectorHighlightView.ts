@@ -1,8 +1,4 @@
-import {Text, Application, Assets, Container, Graphics, Sprite, BitmapText, curveEps, Point, Color} from "pixi.js";
-import MyScale from "../../utils/MyScale";
-import {Block} from "./misc/Block";
-import {TimelineSectorModel} from "../model/TimelineSectorModel";
-import {BlockView} from "./BlockView";
+import {Application, Container, Graphics} from "pixi.js";
 import gsap from "gsap";
 import Config from "../../config/Config";
 
@@ -45,7 +41,6 @@ export class SectorHighlightView extends Container {
 
         obj.interactive = true;
         obj.on('pointerdown', () => {
-            console.log('sector on pointerdown')
             this.emit('onSector', this.vid);
         })
 

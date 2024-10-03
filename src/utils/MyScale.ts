@@ -31,7 +31,6 @@ export default class MyScale {
     static resize(): void {
         let app = MyScale.app;
 
-        //  if (app && app.renderer && app.renderer.view) {
         let size = {width: window.innerWidth, height: window.innerHeight};
         let defScaleX = Config.DEFAULT_WIDTH / size.width;
         let defScaleY = Config.DEFAULT_HEIGHT / size.height;
@@ -46,9 +45,6 @@ export default class MyScale {
         (app.renderer.view as any).canvas.style.width = `100%`;
         (app.renderer.view as any).canvas.style.height = `100%`;
         app.renderer.resize(window_width, window_height);
-        // }
-
-
         let width = window_width;
         let height = window_height;
         let newScaleX = (Math.floor(width / Config.DEFAULT_WIDTH * 100)) / 100;
@@ -186,112 +182,6 @@ export default class MyScale {
             onRescale: config.onRescale,
         }
         this.objectsForScale.push(data);
-        // MyScale.rescale(Config.GAME.scale.gameSize);
     }
 
-
-    public static rescale(gameSize: any, baseSize?: any, displaySize?: any, previousWidth?: any, previousHeight?: any) {
-        let width = gameSize.width;
-        let height = gameSize.height;
-        let newScaleX = (Math.floor(width / Config.DEFAULT_WIDTH * 100)) / 100;
-        let newScaleY = (Math.floor(height / Config.DEFAULT_HEIGHT * 100)) / 100;
-
-        MyScale.objectsForScale.forEach((data: any) => {
-                let obj: any = data.obj;
-                if (data.isBG) {
-                    if (width > height) {
-                        obj.displayWidth = width;
-                        obj.scaleY = obj.scaleX;
-                        if (obj.displayHeight < height) {
-                            obj.displayHeight = height;
-                            obj.scaleX = obj.scaleY;
-                        }
-                    } else {
-                        obj.displayHeight = height;
-                        obj.scaleX = obj.scaleY;
-                        if (obj.displayWidth < width) {
-                            obj.displayWidth = width;
-                            obj.scaleY = obj.scaleX;
-                        }
-
-                    }
-                    obj.setPosition(width / 2 - obj.displayWidth / 2, height / 2 - obj.displayHeight / 2);
-                } else {
-                    let scale = Math.min(newScaleX, newScaleY);
-                    let s = scale;
-                    if (data.config.center) {
-                        if (s <= 1 || scale <= 1) {
-                            scale = 1;
-                            s = 1;
-                        }
-                    }
-
-                    if (width >= height) {
-                        if (data.myScaleLandscape) {
-                            s = scale * data.myScaleLandscape;
-                        }
-                    } else {
-                        if (data.myScalePortrait) {
-                            s = scale * data.myScalePortrait;
-                        }
-                    }
-                    obj.setPosition(width / 2, height / 2);
-                    if (data.config.top) {
-                        obj.y = data.config.top * s;
-                    }
-                    if (data.config.topLandscape) {
-                        if (width >= height) {
-                            if (data.config.topLandscape) {
-                                obj.y = data.config.topLandscape * s;
-                            }
-                        }
-                    }
-
-                    if (data.config.bottom) {
-                        obj.y = height - data.config.bottom * s;
-                    }
-
-                    if (data.config.botLandscape) {
-                        if (width >= height) {
-                            if (data.config.botLandscape) {
-                                obj.y = height - data.config.botLandscape * s;
-                            }
-                        }
-                    }
-
-                    if (data.config.left) {
-                        obj.x = data.config.left * s;
-                    }
-                    if (data.config.right) {
-                        obj.x = width - data.config.right * s;
-                    }
-
-                    if (data.config.rightLandscape) {
-                        if (width >= height) {
-                            if (data.config.rightLandscape) {
-                                obj.x = width - data.config.rightLandscape * s;
-                            }
-                        }
-
-                    }
-
-                    obj.setScale(s);
-                    if (data.config.wide) {
-                        obj.setScale(newScaleX);
-                        if (data.config.top)
-                            obj.y = data.config.top * newScaleX;
-
-                        if (data.config.bottom)
-                            obj.y = height - data.config.bottom * newScaleX;
-                    }
-
-                    /*   if (width / height < 1.7) {
-                           obj.setScale(s - s / 3);
-                       }*/
-                }
-                if (data.config.onRescale)
-                    data.config.onRescale();
-            }
-        )
-    }
 }

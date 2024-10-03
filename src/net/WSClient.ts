@@ -1,48 +1,7 @@
 enum SubscriptionTypes {
-    NEW_HEADS = 'newHeads',
-    NEW_PENDING_TRANSACTIONS = 'newPendingTransactions',
     NEW_DAG_BLOCK = 'newDagBlocks',
     NEW_DAG_BLOCK_FINALIZED = 'newDagBlocksFinalized',
     NEW_PBFT_BLOCK = 'newPbftBlocks',
-}
-
-class DAGBlock {
-    constructor(
-        public hash: string,
-        public level: number,
-        public pivot: string,
-        public tips: string[],
-        public timestamp: number
-    ) {
-    }
-
-    static fromJSON(data: {
-        hash: string;
-        level: string;
-        pivot: string;
-        tips: string[];
-        timestamp: string;
-    }) {
-        return new DAGBlock(
-            data.hash,
-            parseInt(data.level, 16),
-            data.pivot,
-            data.tips,
-            parseInt(data.timestamp, 16)
-        );
-    }
-}
-
-class DAGBlockFinalized {
-    constructor(
-        public hash: string,
-        public period: number
-    ) {
-    }
-
-    static fromJSON(data: { block: string; period: string }) {
-        return new DAGBlockFinalized(data.block, parseInt(data.period, 16));
-    }
 }
 
 export class WSClient {
@@ -53,28 +12,20 @@ export class WSClient {
     } = {};
 
     onGetBlock: Function;
-    onNewHeads: Function;
+    onNewPBFT: Function;
     onBlockFinalized: Function;
 
-    constructor(url: string, onGetBlock: Function, onBlockFinalized: Function, onNewHeads: Function) {
+    constructor(url: string, onGetBlock: Function, onBlockFinalized: Function, onNewPBFT: Function) {
         this.ws = new WebSocket(url);
         this.onGetBlock = onGetBlock;
         this.onBlockFinalized = onBlockFinalized;
-        this.onNewHeads = onNewHeads;
-
-        console.log('Connected to websocket server');
-        this.on(SubscriptionTypes.NEW_DAG_BLOCK, (data: any) => {
-        })
-        this.on(SubscriptionTypes.NEW_DAG_BLOCK_FINALIZED, (data: any) => {
-        })
-        // this.on(SubscriptionTypes.NEW_HEADS, (data: any) => {
-        // })
-
-        // this.subscribe(SubscriptionTypes.NEW_HEADS);
-        // this.subscribe(SubscriptionTypes.NEW_PENDING_TRANSACTIONS);
+        this.onNewPBFT = onNewPBFT;
+        this.on(SubscriptionTypes.NEW_DAG_BLOCK)
+        this.on(SubscriptionTypes.NEW_DAG_BLOCK_FINALIZED)
+        this.on(SubscriptionTypes.NEW_PBFT_BLOCK)
         this.subscribe(SubscriptionTypes.NEW_DAG_BLOCK);
         this.subscribe(SubscriptionTypes.NEW_DAG_BLOCK_FINALIZED);
-        // this.subscribe(SubscriptionTypes.NEW_PBFT_BLOCK);
+        this.subscribe(SubscriptionTypes.NEW_PBFT_BLOCK);
         this.listen()
     }
 
@@ -82,10 +33,9 @@ export class WSClient {
         this.subscriptions.push(event);
     }
 
-    on(event: SubscriptionTypes, callback: (data: any) => void) {
+    on(event: SubscriptionTypes) {
         this.ws.addEventListener('message', (msg: MessageEvent) => {
             const data = JSON.parse(msg.data);
-            //s console.log(data);
             if (!data.method) {
                 this.subscriptionIds[data.result] = this.subscriptions[data.id - 1];
             }
@@ -93,13 +43,12 @@ export class WSClient {
                 const params = data.params;
                 if (this.subscriptionIds[params.subscription] === event) {
                     let result = params.result;
-                    //   console.log(event, result);
                     if (event === SubscriptionTypes.NEW_DAG_BLOCK) {
                         this.onGetBlock(result);
                     } else if (event === SubscriptionTypes.NEW_DAG_BLOCK_FINALIZED) {
                         this.onBlockFinalized(result);
-                    } else if (event === SubscriptionTypes.NEW_HEADS) {
-                        this.onNewHeads(result);
+                    } else if (event === SubscriptionTypes.NEW_PBFT_BLOCK) {
+                        this.onNewPBFT(result.pbft_block);
                     }
                 }
             }

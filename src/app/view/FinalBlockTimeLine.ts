@@ -1,11 +1,8 @@
 import MyScale from "../../utils/MyScale";
-import {Application, Text, Container, Graphics, Sprite, TextStyle} from "pixi.js";
-import CustomTextures from "../../utils/CustomTextures";
-import Config from "../../config/Config";
-import gsap from "gsap";
+import {Application, Container, Graphics, Point} from "pixi.js";
 import {SectorView} from "./SectorView";
-import {BlockView} from "./BlockView";
 import {PBFTBlockView} from "./PBFTBlockView";
+import DrawUtil from "../../utils/DrawUtil";
 
 export class FinalBlockTimeLine extends Container {
 
@@ -39,55 +36,83 @@ export class FinalBlockTimeLine extends Container {
             updateZoom();
         }
 
+        let contGraphics = new Container();
+        this.addChild(contGraphics);
+
         let cont = new Container();
         this.addChild(cont);
 
-        let updateZoom = () => {
-            for (let i = 0; i < labels.length; i++) {
-                let basicText = labels[i];
-                basicText.visible = true;
-                basicText.scale.x = zoom;
-                basicText.scale.y = zoom;
+        const graphics = new Graphics();
+        contGraphics.addChild(graphics);
 
-                /*  if (zoom < 1) {
-                      basicText.visible = false;
-                      if (i % 2 == 0 && zoom >= 0.6 && zoom < 1) {
-                          basicText.visible = true;
-                      } else if (i % 6 == 0 && zoom >= 0.3 && zoom < 0.6) {
-                          basicText.visible = true;
-                      } else if (i % 8 == 0 && zoom >= 0 && zoom < 0.3) {
-                          basicText.visible = true;
-                      }
-                  }*/
-            }
+        let updateZoom = () => {
         }
 
         let updateLabels = () => {
             for (let i = 0; i < this.sectors.length; i++) {
                 let sector = this.sectors[i];
-                let basicText = labels[i];
-                basicText.x = sector.x + 100;
-                basicText.text = sector.model.id;
+                if (labels[i]) {
+                    let basicText = labels[i];
+                    basicText.x = sector.x + 100;
+                    basicText.text = sector.model.id;
+                } else {
+                    let blockView = new PBFTBlockView(app);
+                    cont.addChild(blockView);
+                    labels.push(blockView);
+                }
+                if (sector.finalized) {
+                    labels[i].hashPBFT = sector.hashPBFT;
+                    labels[i].setHashPBFT();
+                    labels[i].visible = true;
+                } else {
+                    labels[i].visible = false;
+                }
             }
+            contGraphics.x = cont.x;
+            contGraphics.scale.x = cont.scale.x;
+            contGraphics.scale.y = cont.scale.y;
         }
 
         this.addSector = (sector: SectorView) => {
-            if (this.sectors.length > Config.MAX_SECTORS) {
-                updateLabels();
-                return;
-            }
-
-            let blockView = new PBFTBlockView(app);
-            cont.addChild(blockView);
-            labels.push(blockView);
-            updateLabels();
-            updateZoom();
         }
 
+        const drawConnect = () => {
+            let temp = [];
+            for (let i = 0; i < labels.length; i++) {
+                let current = labels[i];
+                if (current && current.visible) {
+                    temp.push(current)
+                }
+            }
+
+            for (let i = temp.length - 1; i >= 0; i--) {
+                let current = temp[i];
+                let prev = temp[i - 1];
+                if (temp[i - 1]) {
+                    DrawUtil.drawLine(
+                        graphics,
+                        new Point(current.x + 35, 0),
+                        new Point(prev.x, 0),
+                        true,
+                        true
+                    );
+                }
+            }
+        }
         this.render = () => {
+            graphics.clear();
+
             cont.x = this.cont.x;
             cont.scale.x = this.cont.scale.x;
             cont.scale.y = this.cont.scale.y;
+
+            contGraphics.x = cont.x;
+            contGraphics.scale.x = cont.scale.x;
+            contGraphics.scale.y = cont.scale.y;
+
+            updateLabels();
+
+            drawConnect();
         }
     }
 }

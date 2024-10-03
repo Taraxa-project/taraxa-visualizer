@@ -1,11 +1,14 @@
 export default class Config {
 
-    static CENTER_POS = false;
+
     static DEFAULT_WIDTH = 1920;
     static DEFAULT_HEIGHT = 1080;
-    static MAX_SECTORS = 100;
-    static animateBlock = false;
-    static animateBlockSurface = !false;
+    static MAX_SECTORS = 10;
+
+
+
+    static SERVER: string = 'wss://ws.mainnet.taraxa.io';
+
     static colors = {
         green: '#15ab5b',
         darkgreen: '#1d3838',
@@ -17,16 +20,25 @@ export default class Config {
         white: '#ffffff',
         blockInactive: '#a8a8a8',
         blockActive: '#0d984d',
-        PBFTBlock:'#59b0ff',
+        PBFTBlock: '#59b0ff',
+    }
+    static FONTS = {
+        block: 20,
+        blockPBFT: 20,
+        sectorTimeLineSize: 20,
+        sectorTimeLineColor: Config.colors.white,
     }
     static lines = {
-        pivotWidth: 1,
-        tipWidth: 1,
-        pivotColor: '#464646',
-        tipColor: '#a8a8a8'
+        pivotWidth: 2,
+        tipWidth: 2,
+        pivotColor: '#ffffff',
+        tipColor: '#757575',
+        arrowOffset: 42,
+        arrowHeadLength: 20,
+        arrowHeadWidth: 8,
     }
 
-    static showFinalized = !true;
-    static SECTOR_MOVE_SPEED = 0.5;
+    static showFinalized = false;
+    static SECTOR_MOVE_SPEED = 1;
     static SECTOR_WIDTH = 200;
 }

@@ -1,13 +1,9 @@
-import {Application, Assets, BitmapText, Container, Graphics, Sprite, Text, TextStyle} from "pixi.js";
-import MyScale from "../../utils/MyScale";
-import {Block} from "./misc/Block";
-import {TimelineSectorModel} from "../model/TimelineSectorModel";
+import {Application, Container, Sprite, Text, TextStyle} from "pixi.js";
 import {BlockModel} from "../model/BlockModel";
 import CustomTextures from "../../utils/CustomTextures";
 import Config from "../../config/Config";
 import gsap from "gsap";
 import {SectorView} from "./SectorView";
-import {MainController} from "../controller/MainController";
 
 export class BlockView extends Container {
 
@@ -19,6 +15,7 @@ export class BlockView extends Container {
     render: Function;
     clean: Function;
     moveTo: Function;
+    forceGreen: Function;
 
     constructor(app: Application) {
         super();
@@ -33,17 +30,10 @@ export class BlockView extends Container {
 
         const obj = new Sprite(CustomTextures.textures.hex);
         obj.anchor.set(0.5);
-        // obj.scale.set(0.298);
         this.addChild(obj)
-
-        /*   const img = new Sprite(CustomTextures.textures.blockTexture);
-           img.anchor.set(0.5);
-           img.scale.set(0.3);
-           this.addChild(img)*/
 
         obj.interactive = true;
         obj.on('pointerdown', () => {
-            // Config.showBlock(this.model);
             (window as any).showblock(this.model);
         })
 
@@ -55,11 +45,6 @@ export class BlockView extends Container {
                 y: 1.1,
                 ease: "sine.out",
             });
-            // gsap.to(basicText, {
-            //     duration: 0.3, // продолжительность анимации в секундах
-            //     y: 60,
-            //     ease: "sine.out",
-            // });
         })
 
         obj.on('pointerout', () => {
@@ -69,11 +54,6 @@ export class BlockView extends Container {
                 y: 1,
                 ease: "sine.in",
             });
-            // gsap.to(basicText, {
-            //     duration: 0.3, // продолжительность анимации в секундах
-            //     y: 50,
-            //     ease: "sine.in",
-            // });
         })
 
         this.debug = (value: number) => {
@@ -94,7 +74,7 @@ export class BlockView extends Container {
 
         const style = new TextStyle({
             fontFamily: 'Inter',
-            fontSize: 20,
+            fontSize:Config.FONTS.block,
             fill: Config.colors.white,
             wordWrap: false,
             wordWrapWidth: 440,
@@ -111,12 +91,18 @@ export class BlockView extends Container {
         basicText2.y = basicText.y + 30;
 
         this.render = () => {
-           /* if (this.model?.finalized && !colored && Config.showFinalized) {
+            if (this.view?.finalized && !colored) {
                 colored = true;
-                obj.tint = Config.colors.white;
-            }*/
+                obj.tint = Config.colors.blockActive;
+            }
         }
 
+        this.forceGreen = () => {
+            if (!colored) {
+                colored = true;
+                obj.tint = Config.colors.blockActive;
+            }
+        }
         this.update = () => {
             if (this.model) {
                 basicText.text = this.model.hash.slice(0, 5);

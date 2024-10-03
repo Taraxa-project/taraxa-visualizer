@@ -1,8 +1,7 @@
-import {Application, Assets, Container, Graphics, Sprite} from "pixi.js";
-import {MainView} from "../view/MainView";
 import {MainModel} from "../model/MainModel";
 import {WSClient} from "../../net/WSClient";
 import {BlockModel} from "../model/BlockModel";
+import Config from "../../config/Config";
 
 export class MainController {
 
@@ -13,7 +12,6 @@ export class MainController {
     addTestBlock: Function;
 
     constructor() {
-        console.log('main controller init');
         this.update = () => {
         }
 
@@ -22,7 +20,7 @@ export class MainController {
         }
         this.init = (model: MainModel) => {
             this.model = model;
-            this.client = new WSClient('wss://ws.mainnet.taraxa.io', model.addBlock, model.onBlockFinalized, model.onNewHeads);
+            this.client = new WSClient(Config.SERVER, model.addBlock, model.onBlockFinalized, model.onNewPBFT);
         }
     }
 }

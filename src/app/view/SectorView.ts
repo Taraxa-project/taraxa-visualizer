@@ -1,13 +1,8 @@
-import {Text, Application, Assets, Container, Graphics, Sprite, BitmapText, curveEps, Point} from "pixi.js";
-import MyScale from "../../utils/MyScale";
-import {Block} from "./misc/Block";
+import {Application, Container} from "pixi.js";
 import {TimelineSectorModel} from "../model/TimelineSectorModel";
 import {BlockView} from "./BlockView";
-import gsap from "gsap";
 import Config from "../../config/Config";
-import * as Util from "util";
 import {BlockModel} from "../model/BlockModel";
-import TWEEN from '@tweenjs/tween.js';
 
 export class SectorView extends Container {
     vid: number;
@@ -18,8 +13,11 @@ export class SectorView extends Container {
     onRescale: Function;
     update: Function;
     render: Function;
-    nextSector: SectorView;
+
     clean: Function;
+    finalized: boolean = false;
+    hashPBFT: string;
+
 
     constructor(app: Application) {
         super();
@@ -108,7 +106,6 @@ export class SectorView extends Container {
             }
         }
 
-
         let reposition = () => {
             const centerY = 0;
             const spacingY = 120;
@@ -162,11 +159,8 @@ export class SectorView extends Container {
             for (let i = 0; i < this.blocks.length; i++) {
                 let blockView = this.blocks[i];
                 blockView.visible = false;
-                // blockView.y = 0;
             }
-
             if (this.model) {
-
                 let i = 0;
                 let arr = this.model.getBlocksArray();
                 arr.forEach((blockModel: BlockModel) => {
@@ -174,32 +168,18 @@ export class SectorView extends Container {
                     blockView.model = blockModel;
                     blockModel.view = blockView;
                     blockModel.sector = this;
+                    if (blockModel.finalized) {
+                        this.finalized = true;
+                        this.hashPBFT = blockModel.hashPBFT;
+                    }
                     blockView.update();
                     blockView.visible = true;
                     i++;
                     //  console.log(blockModel)
 
                 });
-                /*  for (let i = 0; i < this.model.getSize(); i++) {
-                      let blockView = this.blocks[i];
-                      blockView.model = this.model.blocks[i];
-                      blockView.update();
-                      blockView.visible = true;
-                  }*/
-                //   basicText.visible = false;
-                /* for (let i = 0; i < this.model.blocks.length; i++) {
-                     let blockView = this.blocks[i];
-                     blockView.model = this.model.blocks[i];
-                  //   blockView.update();
-                     blockView.visible = true;
-                 }*/
-
                 reposition();
             }
-
-            // if (this.vid >= 0)
-            //     basicText.text = this.vid;
-            // basicText.visible = true;
         }
 
         this.onRescale = (w: number, h: number) => {

@@ -9,9 +9,9 @@ export class BlockModel {
     tips: string[] = [];
     timestamp: number;
     finalized: boolean = false;
-    view:BlockView;
-    sector:SectorView;
-
+    view: BlockView;
+    sector: SectorView;
+    hashPBFT: string;
 
     constructor(data: any) {
         this.hash = data.hash;

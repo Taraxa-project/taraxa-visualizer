@@ -1,4 +1,4 @@
-import {Application, BitmapText, Color, Container, Graphics, Sprite} from "pixi.js";
+import {Application, Container, Graphics} from "pixi.js";
 import gsap from "gsap";
 import Config from "../../../config/Config";
 
@@ -8,7 +8,7 @@ export class CircleButton extends Container {
     onOver: Function;
     onOut: Function;
     addIcon: Function;
-    icon: Graphics;
+
 
     constructor(app: Application) {
         super();
@@ -27,11 +27,11 @@ export class CircleButton extends Container {
                 let plus = new Graphics();
                 plus.roundRect(-35, -6, 70, 12, 6)
                     .fill(Config.colors.darkgreen)
-                icon.addChild(plus);
+                this.addChild(plus);
                 let plus2 = new Graphics();
                 plus2.roundRect(-6, -35, 12, 70, 6)
                     .fill(Config.colors.darkgreen)
-                icon.addChild(plus2);
+                this.addChild(plus2);
             }
             if (value == 'minus') {
                 icon.circle(0, 0, 60)
@@ -39,7 +39,7 @@ export class CircleButton extends Container {
                 let plus = new Graphics();
                 plus.roundRect(-35, -6, 70, 12, 6)
                     .fill(Config.colors.darkgreen)
-                icon.addChild(plus);
+                this.addChild(plus);
             }
             if (value == 'play') {
                 icon.circle(0, 0, 60)
@@ -48,7 +48,7 @@ export class CircleButton extends Container {
                 let plus = new Graphics();
                 plus.roundPoly(0, 0, 40, 3, 20)
                     .fill(Config.colors.darkgreen)
-                icon.addChild(plus);
+                this.addChild(plus);
                 plus.angle = 90;
             }
             if (value == 'pause') {
@@ -57,11 +57,11 @@ export class CircleButton extends Container {
                 let plus2 = new Graphics();
                 plus2.roundRect(-20, -25, 12, 50, 6)
                     .fill(Config.colors.darkgreen)
-                icon.addChild(plus2);
+                this.addChild(plus2);
                 let plus3 = new Graphics();
                 plus3.roundRect(10, -25, 12, 50, 6)
                     .fill(Config.colors.darkgreen)
-                icon.addChild(plus3);
+                this.addChild(plus3);
             }
         }
         this.addChild(icon);

@@ -1,5 +1,3 @@
-import {Application, Assets, Container, Graphics, Sprite} from "pixi.js";
-import {MainView} from "../view/MainView";
 import {BlockModel} from "./BlockModel";
 import {SectorView} from "../view/SectorView";
 
@@ -28,7 +26,7 @@ export class TimelineSectorModel {
                     arr.push(blockModel);
                 }
             } catch (e) {
-                console.log(this.id, 'some error')
+               // console.log(this.id, 'some error')
             }
             return arr;
         }

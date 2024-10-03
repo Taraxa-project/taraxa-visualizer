@@ -1,17 +1,12 @@
-import {Application, Assets, BitmapText, Container, Graphics, Sprite, Text, TextStyle} from "pixi.js";
-import MyScale from "../../utils/MyScale";
-import {Block} from "./misc/Block";
-import {TimelineSectorModel} from "../model/TimelineSectorModel";
+import {Application, Container, Sprite, Text, TextStyle} from "pixi.js";
 import {BlockModel} from "../model/BlockModel";
 import CustomTextures from "../../utils/CustomTextures";
 import Config from "../../config/Config";
 import gsap from "gsap";
-import {SectorView} from "./SectorView";
-import {MainController} from "../controller/MainController";
 
 export class PBFTBlockView extends Container {
 
-    view: SectorView;
+
     vid: number;
     model: BlockModel;
     debug: Function;
@@ -19,6 +14,9 @@ export class PBFTBlockView extends Container {
     render: Function;
     clean: Function;
     moveTo: Function;
+    obj: any;
+    hashPBFT: string;
+    setHashPBFT: Function;
 
     constructor(app: Application) {
         super();
@@ -32,18 +30,13 @@ export class PBFTBlockView extends Container {
         let colored = false;
 
         const obj = new Sprite(CustomTextures.textures.hex);
-        obj.anchor.set(0.5);
-        // obj.scale.set(0.298);
-        this.addChild(obj)
 
-        /*   const img = new Sprite(CustomTextures.textures.blockTexture);
-           img.anchor.set(0.5);
-           img.scale.set(0.3);
-           this.addChild(img)*/
+        this.obj = obj;
+        obj.anchor.set(0.5);
+        this.addChild(obj)
 
         obj.interactive = true;
         obj.on('pointerdown', () => {
-            // Config.showBlock(this.model);
             (window as any).showblock(this.model);
         })
 
@@ -55,11 +48,6 @@ export class PBFTBlockView extends Container {
                 y: 1.1,
                 ease: "sine.out",
             });
-            // gsap.to(basicText, {
-            //     duration: 0.3, // продолжительность анимации в секундах
-            //     y: 60,
-            //     ease: "sine.out",
-            // });
         })
 
         obj.on('pointerout', () => {
@@ -69,11 +57,6 @@ export class PBFTBlockView extends Container {
                 y: 1,
                 ease: "sine.in",
             });
-            // gsap.to(basicText, {
-            //     duration: 0.3, // продолжительность анимации в секундах
-            //     y: 50,
-            //     ease: "sine.in",
-            // });
         })
 
         this.debug = (value: number) => {
@@ -94,7 +77,7 @@ export class PBFTBlockView extends Container {
 
         const style = new TextStyle({
             fontFamily: 'Inter',
-            fontSize: 20,
+            fontSize: Config.FONTS.blockPBFT,
             fill: Config.colors.white,
             wordWrap: false,
             wordWrapWidth: 440,
@@ -111,10 +94,13 @@ export class PBFTBlockView extends Container {
         basicText2.y = basicText.y + 30;
 
         this.render = () => {
-           /* if (this.model?.finalized && !colored && Config.showFinalized) {
-                colored = true;
-                obj.tint = Config.colors.white;
-            }*/
+        }
+
+        this.setHashPBFT = () => {
+            if (this.hashPBFT) {
+                basicText.text = this.hashPBFT.slice(0, 5);
+                basicText2.text = "..." + this.hashPBFT.slice(-3);
+            }
         }
 
         this.update = () => {

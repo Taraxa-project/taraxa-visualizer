@@ -1,8 +1,6 @@
 import MyScale from "../../utils/MyScale";
-import {Application, Text, Container, Graphics, Sprite, TextStyle} from "pixi.js";
-import CustomTextures from "../../utils/CustomTextures";
+import {Application, Container, Text, TextStyle} from "pixi.js";
 import Config from "../../config/Config";
-import gsap from "gsap";
 import {SectorView} from "./SectorView";
 
 export class SectorTimeLine extends Container {
@@ -44,10 +42,8 @@ export class SectorTimeLine extends Container {
             for (let i = 0; i < labels.length; i++) {
                 let basicText = labels[i];
                 basicText.visible = true;
-
                 basicText.scale.x = 1 / zoom;
                 basicText.scale.y = 1 / zoom;
-
                 if (zoom < 1) {
                     basicText.visible = false;
                     if (i % 2 == 0 && zoom >= 0.6 && zoom < 1) {
@@ -71,8 +67,8 @@ export class SectorTimeLine extends Container {
         }
         const style = new TextStyle({
             fontFamily: 'Inter',
-            fontSize: 30,
-            fill: "#ffffff",
+            fontSize: Config.FONTS.sectorTimeLineSize,
+            fill: Config.colors.white,
             wordWrap: false,
             wordWrapWidth: 440,
         });
