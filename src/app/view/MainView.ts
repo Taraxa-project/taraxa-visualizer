@@ -131,49 +131,49 @@ export class MainView extends Container {
                     sector.update()
                 }
             }
-            if (this.sectors.length > Config.MAX_SECTORS) {
-                let first = this.sectors.shift();
-                first.model.view = null;
-                first.model = null;
-                gsap.to(first, {
-                    x: -Config.SECTOR_WIDTH,
-                    duration: 0, // продолжительность анимации в секундах
-                    ease: "sine.out",
-                    onComplete: () => {
-                        cont.removeChild(first);
-                        first.clean();
-                        first.destroy();
-                        first = null;
-                    }
-                });
+            /* if (this.sectors.length > Config.MAX_SECTORS) {
+                 let first = this.sectors.shift();
+                 first.model.view = null;
+                 first.model = null;
+                 gsap.to(first, {
+                     x: -Config.SECTOR_WIDTH,
+                     duration: 0, // продолжительность анимации в секундах
+                     ease: "sine.out",
+                     onComplete: () => {
+                         cont.removeChild(first);
+                         first.clean();
+                         first.destroy();
+                         first = null;
+                     }
+                 });
 
-                let firstHightlight = this.sectorsHighLights.shift();
-                gsap.to(firstHightlight, {
-                    x: -Config.SECTOR_WIDTH,
-                    duration: 0, // продолжительность анимации в секундах
-                    ease: "sine.out",
-                    onComplete: () => {
-                        contHighlight.removeChild(firstHightlight);
-                        firstHightlight.destroy();
-                        firstHightlight = null;
-                    }
-                });
+                 let firstHightlight = this.sectorsHighLights.shift();
+                 gsap.to(firstHightlight, {
+                     x: -Config.SECTOR_WIDTH,
+                     duration: 0, // продолжительность анимации в секундах
+                     ease: "sine.out",
+                     onComplete: () => {
+                         contHighlight.removeChild(firstHightlight);
+                         firstHightlight.destroy();
+                         firstHightlight = null;
+                     }
+                 });
 
-                for (let i = 0; i < this.sectors.length; i++) {
-                    let s = this.sectors[i];
-                    let f = i * Config.SECTOR_WIDTH;
-                    gsap.to(s, {
-                        x: f,
-                        duration: 0, // продолжительность анимации в секундах
-                        ease: "sine.out",
-                    });
-                    gsap.to(this.sectorsHighLights[i], {
-                        x: f,
-                        duration: 0, // продолжительность анимации в секундах
-                        ease: "sine.out",
-                    });
-                }
-            }
+                 for (let i = 0; i < this.sectors.length; i++) {
+                     let s = this.sectors[i];
+                     let f = i * Config.SECTOR_WIDTH;
+                     gsap.to(s, {
+                         x: f,
+                         duration: 0, // продолжительность анимации в секундах
+                         ease: "sine.out",
+                     });
+                     gsap.to(this.sectorsHighLights[i], {
+                         x: f,
+                         duration: 0, // продолжительность анимации в секундах
+                         ease: "sine.out",
+                     });
+                 }
+             }*/
 
             selectedSector = selectedSector + 1;
             if (selectedSector >= this.sectors.length) {
@@ -184,6 +184,8 @@ export class MainView extends Container {
 
             timeline.addSector();
             timelineBlocks.addSector();
+
+
         }
 
         this.updateData = (model: MainModel) => {
@@ -278,7 +280,7 @@ export class MainView extends Container {
         contHighlight.x = contGraphics.x = contGraphicsFinal.x = cont.x = Config.DEFAULT_WIDTH / 2 - 100;
         let zoom = 1;
         let selectedSector: number = 0;
-        let easeType = 'sine.out';
+        let easeType = Config.animations.ease;
 
         let repos = () => {
         }
@@ -303,12 +305,20 @@ export class MainView extends Container {
             let speed = Config.SECTOR_MOVE_SPEED;
 
             if (active)
-                val = Config.DEFAULT_WIDTH - (this.sectors[selectedSector].x) * zoom;
+                val = Config.DEFAULT_WIDTH / 2 - (this.sectors[selectedSector].x) * zoom;
             else
                 val = Config.DEFAULT_WIDTH / 2 - (this.sectors[selectedSector].x + 100) * zoom;
 
             if (instant)
                 speed = 0;
+
+            gsap.killTweensOf([
+                contHighlight,
+                contGraphics,
+                contGraphicsFinal,
+                cont
+            ]);
+
             gsap.to([
                 contHighlight,
                 contGraphics,

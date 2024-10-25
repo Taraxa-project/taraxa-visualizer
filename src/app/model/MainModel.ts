@@ -63,7 +63,7 @@ export class MainModel {
         }
         this.addBlock = (block: BlockModel) => {
             this.allBlocksMap.set(block.hash, block);
-            if (this.dataMap.size >= Config.MAX_SECTORS + 1) {
+            /*if (this.dataMap.size >= Config.MAX_SECTORS + 1) {
                 const firstKey = this.dataMap.keys().next().value;
                 let sector = this.dataMap.get(firstKey);
                 for (const key of sector.blocksMap.keys()) {
@@ -72,7 +72,7 @@ export class MainModel {
                 sector.blocksMap = null;
                 sector.view = null;
                 this.dataMap.delete(firstKey);
-            }
+            }*/
             let sector;
             if (this.dataMap.has(block.level)) {
                 sector = this.dataMap.get(block.level);

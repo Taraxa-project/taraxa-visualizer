@@ -3,10 +3,8 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require("terser-webpack-plugin");
 
-const webpackMode = 'production';
-
 module.exports = {
-    mode: webpackMode,
+    mode:  'production',
     entry: {
         'app': './src/App.ts',
     },
@@ -17,10 +15,12 @@ module.exports = {
     },
     watchOptions: {
         ignored: '**/node_modules',
-        poll: 1000, // Check for changes every second
     },
     resolve: {
         extensions: ['.tsx', '.ts', '.js', '.jsx']
+    },
+    externals: {
+        "pixi.js": "PIXI",
     },
     optimization: {
         minimizer: [

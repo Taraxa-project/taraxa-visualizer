@@ -15,7 +15,6 @@ import TWEEN from "@tweenjs/tween.js";
         width: 1920,
         height: 1080,
         background: '#151824',
-        // background: '#da32d7',
         preference: 'webgl',
     });
     app.ticker.minFPS = 60;
@@ -27,9 +26,6 @@ import TWEEN from "@tweenjs/tween.js";
     window.addEventListener('resize', MyScale.resize);
     const logo = await Assets.load({
         src: './logo_min.png',
-        /* data: {
-             parseAsGraphicsContext: false,
-         }*/
     });
 
     CustomTextures.textures.logo = logo;

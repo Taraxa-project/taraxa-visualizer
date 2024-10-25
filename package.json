@@ -3,7 +3,6 @@
   "target": "web",
   "scripts": {
     "build:production": "npx webpack --config webpack.config.production.js",
-    "build:development": "npx webpack --config webpack.config.development.js",
     "build:debug": "npx webpack --config webpack.config.debug.js",
     "webpack": "webpack"
   },

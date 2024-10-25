@@ -74,10 +74,10 @@ export class SectorTimeLine extends Container {
         });
 
         this.addSector = (sector: SectorView) => {
-            if (this.sectors.length > Config.MAX_SECTORS) {
+           /* if (this.sectors.length > Config.MAX_SECTORS) {
                 updateLabels();
                 return;
-            }
+            }*/
             let basicText: any = new Text({style});
             basicText.anchor.set(0.5);
             cont.addChild(basicText);
