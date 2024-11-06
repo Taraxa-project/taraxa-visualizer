@@ -30,7 +30,7 @@ export default class MyScale {
 
     static resize(): void {
         let app = MyScale.app;
-
+        
         let size = {width: window.innerWidth, height: window.innerHeight};
         let defScaleX = Config.DEFAULT_WIDTH / size.width;
         let defScaleY = Config.DEFAULT_HEIGHT / size.height;

@@ -328,7 +328,8 @@ export class MainView extends Container {
         val =
           Config.DEFAULT_WIDTH / 2 -
           (this.sectors[selectedSector].x + 100) * zoom;
-
+      val =
+        Config.DEFAULT_WIDTH - (this.sectors[selectedSector].x + 400) * zoom;
       if (instant) speed = 0;
 
       gsap.killTweensOf([contHighlight, contGraphics, contGraphicsFinal, cont]);
