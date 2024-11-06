@@ -12,15 +12,15 @@ export default class Config {
     static colors = {
         green: '#15ab5b',
         darkgreen: '#1d3838',
-        darkback: '#151824',
-        darkbacklight: '#202436',
+        darkback: '#000000',
+        darkbacklight: '#111814',
         darkblue: '#31364b',
         yellow: '#fdbf08',
-        blockcolor: '#0d984d',
+        blockcolor: '#15AC5B',
         white: '#ffffff',
-        blockInactive: '#a8a8a8',
-        blockActive: '#0d984d',
-        PBFTBlock: '#59b0ff',
+        blockInactive: '#232323',
+        blockActive: '#15AC5B',
+        PBFTBlock: '#A594FC',
     }
     static FONTS = {
         block: 20,

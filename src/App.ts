@@ -14,7 +14,7 @@ import TWEEN from "@tweenjs/tween.js";
         antialias: true,
         width: 1920,
         height: 1080,
-        background: '#151824',
+        background: '#000000',
         preference: 'webgl',
     });
     app.ticker.minFPS = 60;

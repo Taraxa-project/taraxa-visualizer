@@ -1,137 +1,148 @@
-import {Application, Container, Graphics, Point} from "pixi.js";
+import { Application, Container, Graphics, Point } from "pixi.js";
 import MyScale from "../../utils/MyScale";
-import {TimelineSectorModel} from "../model/TimelineSectorModel";
-import {SectorView} from "./SectorView";
-import {BlockModel} from "../model/BlockModel";
+import { TimelineSectorModel } from "../model/TimelineSectorModel";
+import { SectorView } from "./SectorView";
+import { BlockModel } from "../model/BlockModel";
 import CustomTextures from "../../utils/CustomTextures";
-import {SectorHighlightView} from "./SectorHighlightView";
+import { SectorHighlightView } from "./SectorHighlightView";
 import Config from "../../config/Config";
-import {Logo} from "./ui/Logo";
-import {BlockView} from "./BlockView";
+import { Logo } from "./ui/Logo";
+import { BlockView } from "./BlockView";
 import gsap from "gsap";
-import {MainModel} from "../model/MainModel";
-import {ZoomBar} from "./ZoomBar";
-import {SectorTimeLine} from "./SectorTimeLine";
-import {FinalBlockTimeLine} from "./FinalBlockTimeLine";
+import { MainModel } from "../model/MainModel";
+import { ZoomBar } from "./ZoomBar";
+import { SectorTimeLine } from "./SectorTimeLine";
+import { FinalBlockTimeLine } from "./FinalBlockTimeLine";
 import DrawUtil from "../../utils/DrawUtil";
 
 export class MainView extends Container {
+  updateData: Function;
+  onRescale: Function;
+  update: Function;
+  drawConnect: Function;
+  render: Function;
 
-    updateData: Function;
-    onRescale: Function;
-    update: Function;
-    drawConnect: Function;
-    render: Function;
+  mainModel: MainModel;
+  mapData: Map<number, TimelineSectorModel> = new Map<
+    number,
+    TimelineSectorModel
+  >();
+  sectorsHighLights: SectorHighlightView[] = [];
+  sectors: SectorView[] = [];
 
-    mainModel: MainModel;
-    mapData: Map<number, TimelineSectorModel> = new Map<number, TimelineSectorModel>();
-    sectorsHighLights: SectorHighlightView[] = [];
-    sectors: SectorView[] = [];
+  constructor(app: Application) {
+    super();
+    let active = true;
+    app.stage.addChild(this);
+    app.stage.hitArea = app.screen;
 
-    constructor(app: Application) {
-        super();
-        let active = true;
-        app.stage.addChild(this);
-        app.stage.hitArea = app.screen;
+    let obj = new Graphics();
+    obj.rect(
+      0,
+      -Config.DEFAULT_HEIGHT / 2,
+      Config.DEFAULT_WIDTH,
+      Config.DEFAULT_HEIGHT
+    );
+    this.addChild(obj);
 
-        let obj = new Graphics();
-        obj.rect(0, -Config.DEFAULT_HEIGHT / 2, Config.DEFAULT_WIDTH, Config.DEFAULT_HEIGHT)
-        this.addChild(obj);
+    let liner = new Graphics();
+    liner.rect(
+      0,
+      -Config.DEFAULT_HEIGHT / 2,
+      Config.DEFAULT_WIDTH / 2,
+      Config.DEFAULT_HEIGHT
+    );
+    this.addChild(liner);
 
-        let liner = new Graphics();
-        liner.rect(0, -Config.DEFAULT_HEIGHT / 2, Config.DEFAULT_WIDTH / 2, Config.DEFAULT_HEIGHT)
-        this.addChild(liner);
-
-        MyScale.setup(this, {
-            left: 1,
-            scalePortrait: 2,
-            scaleLandscape: 1,
-            onRescale: () => {
-                this.onRescale(app.screen.width, app.screen.height);
-                this.sectors.forEach((sector: SectorView) => {
-                    sector.onRescale(app.screen.width, app.screen.height);
-                })
-                this.sectorsHighLights.forEach((sector: SectorHighlightView) => {
-                    sector.onRescale(app.screen.width, app.screen.height);
-                })
-            }
+    MyScale.setup(this, {
+      left: 1,
+      scalePortrait: 2,
+      scaleLandscape: 1,
+      onRescale: () => {
+        this.onRescale(app.screen.width, app.screen.height);
+        this.sectors.forEach((sector: SectorView) => {
+          sector.onRescale(app.screen.width, app.screen.height);
         });
+        this.sectorsHighLights.forEach((sector: SectorHighlightView) => {
+          sector.onRescale(app.screen.width, app.screen.height);
+        });
+      },
+    });
 
-        let contHighlight = new Container();
-        this.addChild(contHighlight);
-        contHighlight.x = -Config.DEFAULT_WIDTH / 2;
-        contHighlight.y = -Config.DEFAULT_HEIGHT / 2;
+    let contHighlight = new Container();
+    this.addChild(contHighlight);
+    contHighlight.x = -Config.DEFAULT_WIDTH / 2;
+    contHighlight.y = -Config.DEFAULT_HEIGHT / 2;
 
-        let contGraphics = new Container();
-        this.addChild(contGraphics);
-        contGraphics.x = -Config.DEFAULT_WIDTH / 2;
-        contGraphics.y = -Config.DEFAULT_HEIGHT / 2;
-        const graphics = new Graphics();
-        contGraphics.addChild(graphics);
+    let contGraphics = new Container();
+    this.addChild(contGraphics);
+    contGraphics.x = -Config.DEFAULT_WIDTH / 2;
+    contGraphics.y = -Config.DEFAULT_HEIGHT / 2;
+    const graphics = new Graphics();
+    contGraphics.addChild(graphics);
 
-        let contGraphicsFinal = new Container();
-        this.addChild(contGraphicsFinal);
-        contGraphicsFinal.x = -Config.DEFAULT_WIDTH / 2;
-        contGraphicsFinal.y = -Config.DEFAULT_HEIGHT / 2;
-        const graphicsFinal = new Graphics();
-        contGraphicsFinal.addChild(graphicsFinal);
+    let contGraphicsFinal = new Container();
+    this.addChild(contGraphicsFinal);
+    contGraphicsFinal.x = -Config.DEFAULT_WIDTH / 2;
+    contGraphicsFinal.y = -Config.DEFAULT_HEIGHT / 2;
+    const graphicsFinal = new Graphics();
+    contGraphicsFinal.addChild(graphicsFinal);
 
-        let cont = new Container();
-        this.addChild(cont);
-        cont.x = -Config.DEFAULT_WIDTH / 2;
-        cont.y = -Config.DEFAULT_HEIGHT / 2;
+    let cont = new Container();
+    this.addChild(cont);
+    cont.x = -Config.DEFAULT_WIDTH / 2;
+    cont.y = -Config.DEFAULT_HEIGHT / 2;
 
-        const logoview = new Logo(app);
+    const logoview = new Logo(app);
 
-        const timeline = new SectorTimeLine(app);
-        timeline.cont = cont;
-        timeline.sectors = this.sectors;
+    const timeline = new SectorTimeLine(app);
+    timeline.cont = cont;
+    timeline.sectors = this.sectors;
 
-        const timelineBlocks = new FinalBlockTimeLine(app);
-        timelineBlocks.cont = cont;
-        timelineBlocks.sectors = this.sectors;
+    const timelineBlocks = new FinalBlockTimeLine(app);
+    timelineBlocks.cont = cont;
+    timelineBlocks.sectors = this.sectors;
 
-        const zoomBar = new ZoomBar(app);
+    const zoomBar = new ZoomBar(app);
 
-        let circ = new Graphics()
-        circ.circle(0, 0, 50);
-        circ.fill(0xffffff)
-        CustomTextures.textures.circ = app.renderer.generateTexture(circ);
+    let circ = new Graphics();
+    circ.circle(0, 0, 50);
+    circ.fill(0xffffff);
+    CustomTextures.textures.circ = app.renderer.generateTexture(circ);
 
-        let hx = new Graphics();
-        hx.rect(0, 0, 80, 80)
-            .fill(Config.colors.blockInactive)
-        CustomTextures.textures.hex = app.renderer.generateTexture(hx);
+    let hx = new Graphics();
+    hx.roundRect(0, 0, 80, 80, 10).fill(0xffffff);
+    CustomTextures.textures.hex = app.renderer.generateTexture(hx);
 
-        let addSector = () => {
-            for (const key of this.mapData.keys()) {
-                let sectorModel: TimelineSectorModel = this.mapData.get(key);
-                if (!sectorModel.view) {
-                    let sector = new SectorView(app);
-                    sector.createUniformBlocks(16);
-                    sector.x = Config.SECTOR_WIDTH * this.sectors.length;
-                    sector.y = 150
-                    cont.addChild(sector);
-                    sector.model = sectorModel;
-                    sectorModel.view = sector;
-                    this.sectors.push(sector);
+    let addSector = () => {
+      for (const key of this.mapData.keys()) {
+        let sectorModel: TimelineSectorModel = this.mapData.get(key);
+        if (!sectorModel.view) {
+          let sector = new SectorView(app);
+          sector.createUniformBlocks(16);
+          sector.x = Config.SECTOR_WIDTH * this.sectors.length;
+          sector.y = 150;
+          cont.addChild(sector);
+          sector.model = sectorModel;
+          sectorModel.view = sector;
+          this.sectors.push(sector);
 
-                    let sectorHighlight = new SectorHighlightView(app);
-                    sectorHighlight.x = sector.x;
-                    sectorHighlight.y = sector.y;
-                    contHighlight.addChild(sectorHighlight);
-                    this.sectorsHighLights.push(sectorHighlight);
+          let sectorHighlight = new SectorHighlightView(app);
+          sectorHighlight.x = sector.x;
+          sectorHighlight.y = sector.y;
+          contHighlight.addChild(sectorHighlight);
+          this.sectorsHighLights.push(sectorHighlight);
 
-                    sectorHighlight.on('onSector', (vid: number) => {
-                        selectedSector = vid;
-                        active = false;
-                        moveSectorsTo();
-                    });
+          sectorHighlight.on("onSector", (vid: number) => {
+            selectedSector = vid;
+            active = false;
+            moveSectorsTo();
+          });
 
-                    sector.update()
-                }
-            }
-            /* if (this.sectors.length > Config.MAX_SECTORS) {
+          sector.update();
+        }
+      }
+      /* if (this.sectors.length > Config.MAX_SECTORS) {
                  let first = this.sectors.shift();
                  first.model.view = null;
                  first.model = null;
@@ -175,218 +186,222 @@ export class MainView extends Container {
                  }
              }*/
 
-            selectedSector = selectedSector + 1;
-            if (selectedSector >= this.sectors.length) {
-                selectedSector = this.sectors.length - 1;
-            }
+      selectedSector = selectedSector + 1;
+      if (selectedSector >= this.sectors.length) {
+        selectedSector = this.sectors.length - 1;
+      }
 
-            if (active) moveSectorsTo();
+      if (active) moveSectorsTo();
 
-            timeline.addSector();
-            timelineBlocks.addSector();
+      timeline.addSector();
+      timelineBlocks.addSector();
+    };
 
+    this.updateData = (model: MainModel) => {
+      this.mainModel = model;
+      this.mapData = model.dataMap;
+      addSector();
+      this.update();
+    };
 
-        }
-
-        this.updateData = (model: MainModel) => {
-            this.mainModel = model;
-            this.mapData = model.dataMap;
-            addSector();
-            this.update();
-        }
-
-        this.drawConnect = () => {
-            for (let i = this.sectors.length - 1; i >= 0; i--) {
-                let current = this.sectors[i];
-                if (current.model && current.model.view) {
-                    let arr = current.model.getBlocksArray();
-                    arr.forEach((bm: BlockModel) => {
-
-                        if (bm && bm.view && bm.view.model) {
-                            const links: BlockModel[] = [];
-                            const pivotBlock: BlockModel = this.mainModel.getSectorByHash(bm);
-                            if (pivotBlock) {
-                                links.push(pivotBlock)
-                            }
-                            const byTips: BlockModel[] = this.mainModel.getSectorByTips(bm);
-                            const totalLinks = links.concat(byTips);
-                            let block = bm.view;
-                            for (let i = 0; i < totalLinks.length; i++) {
-                                let prevBlock: BlockView = totalLinks[i].view;
-                                try {
-                                    DrawUtil.drawLine(
-                                        block.model.finalized ? graphicsFinal : graphics,
-                                        new Point(Config.SECTOR_WIDTH / 2 + block.view.x, 550 + block.y),
-                                        new Point(Config.SECTOR_WIDTH / 2 + prevBlock.view.x, 550 + prevBlock.y),
-                                        block.model.finalized,
-                                        pivotBlock && i == 0
-                                    );
-                                } catch (e) {
-                                    //  console.log(e, prevBlock)
-                                }
-
-                            }
-                        }
-                    })
+    this.drawConnect = () => {
+      for (let i = this.sectors.length - 1; i >= 0; i--) {
+        let current = this.sectors[i];
+        if (current.model && current.model.view) {
+          let arr = current.model.getBlocksArray();
+          arr.forEach((bm: BlockModel) => {
+            if (bm && bm.view && bm.view.model) {
+              const links: BlockModel[] = [];
+              const pivotBlock: BlockModel = this.mainModel.getSectorByHash(bm);
+              if (pivotBlock) {
+                links.push(pivotBlock);
+              }
+              const byTips: BlockModel[] = this.mainModel.getSectorByTips(bm);
+              const totalLinks = links.concat(byTips);
+              let block = bm.view;
+              for (let i = 0; i < totalLinks.length; i++) {
+                let prevBlock: BlockView = totalLinks[i].view;
+                try {
+                  DrawUtil.drawLine(
+                    block.model.finalized ? graphicsFinal : graphics,
+                    new Point(
+                      Config.SECTOR_WIDTH / 2 + block.view.x,
+                      550 + block.y
+                    ),
+                    new Point(
+                      Config.SECTOR_WIDTH / 2 + prevBlock.view.x,
+                      550 + prevBlock.y
+                    ),
+                    block.model.finalized,
+                    pivotBlock && i == 0
+                  );
+                } catch (e) {
+                  //  console.log(e, prevBlock)
                 }
+              }
             }
+          });
         }
+      }
+    };
 
-        this.onRescale = (w: number, h: number) => {
+    this.onRescale = (w: number, h: number) => {};
+
+    this.render = () => {
+      for (let i = 0; i < this.sectors.length; i++) {
+        let sector = this.sectors[i];
+        sector.render();
+      }
+      timeline.render();
+      timelineBlocks.render();
+    };
+
+    this.update = () => {
+      graphics.clear();
+      graphicsFinal.clear();
+
+      let max = 0;
+      for (let i = 0; i < this.sectors.length; i++) {
+        let s = this.sectors[i];
+        s.vid = i;
+        s.update();
+
+        if (s.finalized) {
+          max = i;
         }
+      }
 
-        this.render = () => {
-            for (let i = 0; i < this.sectors.length; i++) {
-                let sector = this.sectors[i];
-                sector.render();
-            }
-            timeline.render();
-            timelineBlocks.render();
-        }
+      for (let i = 0; i < max; i++) {
+        let s = this.sectors[i];
+        s.blocks.forEach((b: BlockView) => {
+          b.forceGreen();
+        });
+        s.update();
+      }
 
-        this.update = () => {
+      for (let i = 0; i < this.sectorsHighLights.length; i++) {
+        let s = this.sectorsHighLights[i];
+        s.vid = i;
+      }
+      this.drawConnect();
+      repos();
+      timelineBlocks.render();
+    };
 
-            graphics.clear();
-            graphicsFinal.clear();
+    contHighlight.x =
+      contGraphics.x =
+      contGraphicsFinal.x =
+      cont.x =
+        Config.DEFAULT_WIDTH / 2 - 100;
+    let zoom = 1;
+    let selectedSector: number = 0;
+    let easeType = Config.animations.ease;
 
-            let max = 0;
-            for (let i = 0; i < this.sectors.length; i++) {
-                let s = this.sectors[i];
-                s.vid = i;
-                s.update();
+    let repos = () => {};
+    let reposVertical = () => {
+      contHighlight.y =
+        contGraphics.y =
+        contGraphicsFinal.y =
+        cont.y =
+          (-Config.DEFAULT_HEIGHT * zoom) / 2;
+      // let val = -Config.DEFAULT_HEIGHT * zoom / 2;
+      // let speed = Config.SECTOR_MOVE_SPEED / 2;
+      // gsap.to([
+      //     contHighlight,
+      //     contGraphics,
+      //     contGraphicsFinal,
+      //     cont
+      // ], {
+      //     y: val,
+      //     duration: speed, // продолжительность анимации в секундах
+      //     ease: easeType,
+      // });
+    };
 
-                if (s.finalized) {
-                    max = i;
-                }
-            }
+    let moveSectorsTo = (instant = false) => {
+      let val: number;
+      let speed = Config.SECTOR_MOVE_SPEED;
 
-            for (let i = 0; i < max; i++) {
-                let s = this.sectors[i];
-                s.blocks.forEach((b: BlockView) => {
-                    b.forceGreen();
-                })
-                s.update();
-            }
+      if (active)
+        val = Config.DEFAULT_WIDTH / 2 - this.sectors[selectedSector].x * zoom;
+      else
+        val =
+          Config.DEFAULT_WIDTH / 2 -
+          (this.sectors[selectedSector].x + 100) * zoom;
 
-            for (let i = 0; i < this.sectorsHighLights.length; i++) {
-                let s = this.sectorsHighLights[i];
-                s.vid = i;
-            }
-            this.drawConnect();
-            repos();
-            timelineBlocks.render();
-        }
+      if (instant) speed = 0;
 
-        contHighlight.x = contGraphics.x = contGraphicsFinal.x = cont.x = Config.DEFAULT_WIDTH / 2 - 100;
-        let zoom = 1;
-        let selectedSector: number = 0;
-        let easeType = Config.animations.ease;
+      gsap.killTweensOf([contHighlight, contGraphics, contGraphicsFinal, cont]);
 
-        let repos = () => {
-        }
-        let reposVertical = () => {
-            contHighlight.y = contGraphics.y = contGraphicsFinal.y = cont.y = -Config.DEFAULT_HEIGHT * zoom / 2;
-            // let val = -Config.DEFAULT_HEIGHT * zoom / 2;
-            // let speed = Config.SECTOR_MOVE_SPEED / 2;
-            // gsap.to([
-            //     contHighlight,
-            //     contGraphics,
-            //     contGraphicsFinal,
-            //     cont
-            // ], {
-            //     y: val,
-            //     duration: speed, // продолжительность анимации в секундах
-            //     ease: easeType,
-            // });
-        }
+      gsap.to([contHighlight, contGraphics, contGraphicsFinal, cont], {
+        x: val,
+        duration: speed, // продолжительность анимации в секундах
+        ease: easeType,
+      });
+    };
 
-        let moveSectorsTo = (instant = false) => {
-            let val: number;
-            let speed = Config.SECTOR_MOVE_SPEED;
+    zoomBar.zoomIn = (instant = false) => {
+      if (this.sectors.length == 0) return;
+      zoom += 0.1;
+      contHighlight.scale =
+        contGraphics.scale =
+        contGraphicsFinal.scale =
+        cont.scale =
+          zoom;
 
-            if (active)
-                val = Config.DEFAULT_WIDTH / 2 - (this.sectors[selectedSector].x) * zoom;
-            else
-                val = Config.DEFAULT_WIDTH / 2 - (this.sectors[selectedSector].x + 100) * zoom;
+      // let speed = Config.SECTOR_MOVE_SPEED ;
+      // gsap.to([
+      //     contHighlight.scale,
+      //     contGraphics.scale,
+      //     contGraphicsFinal.scale,
+      //     cont.scale,
+      // ], {
+      //     x: zoom, y: zoom,
+      //     duration: speed, // продолжительность анимации в секундах
+      //     ease: easeType,
+      // });
 
-            if (instant)
-                speed = 0;
+      timeline.onChangeZoom(zoom);
+      timelineBlocks.onChangeZoom(zoom);
 
-            gsap.killTweensOf([
-                contHighlight,
-                contGraphics,
-                contGraphicsFinal,
-                cont
-            ]);
+      reposVertical();
+      moveSectorsTo(true);
+    };
+    zoomBar.zoomOut = (instant = false) => {
+      if (this.sectors.length == 0) return;
+      zoom -= 0.1;
+      if (zoom <= 0.2) {
+        zoom = 0.2;
+      }
+      contHighlight.scale =
+        contGraphics.scale =
+        contGraphicsFinal.scale =
+        cont.scale =
+          zoom;
+      // let speed = Config.SECTOR_MOVE_SPEED / 2;
+      // gsap.to([
+      //     contHighlight.scale,
+      //     contGraphics.scale,
+      //     contGraphicsFinal.scale,
+      //     cont.scale,
+      // ], {
+      //     x: zoom,
+      //     y: zoom,
+      //     duration: speed, // продолжительность анимации в секундах
+      //     ease: easeType,
+      // });
 
-            gsap.to([
-                contHighlight,
-                contGraphics,
-                contGraphicsFinal,
-                cont
-            ], {
-                x: val,
-                duration: speed, // продолжительность анимации в секундах
-                ease: easeType,
-            });
-        }
-
-        zoomBar.zoomIn = (instant = false) => {
-            if (this.sectors.length == 0)
-                return;
-            zoom += 0.1;
-            contHighlight.scale = contGraphics.scale = contGraphicsFinal.scale = cont.scale = zoom;
-
-            // let speed = Config.SECTOR_MOVE_SPEED ;
-            // gsap.to([
-            //     contHighlight.scale,
-            //     contGraphics.scale,
-            //     contGraphicsFinal.scale,
-            //     cont.scale,
-            // ], {
-            //     x: zoom, y: zoom,
-            //     duration: speed, // продолжительность анимации в секундах
-            //     ease: easeType,
-            // });
-
-            timeline.onChangeZoom(zoom);
-            timelineBlocks.onChangeZoom(zoom);
-
-            reposVertical();
-            moveSectorsTo(true);
-        }
-        zoomBar.zoomOut = (instant = false) => {
-            if (this.sectors.length == 0)
-                return;
-            zoom -= 0.1;
-            if (zoom <= 0.2) {
-                zoom = 0.2;
-            }
-            contHighlight.scale = contGraphics.scale = contGraphicsFinal.scale = cont.scale = zoom;
-            // let speed = Config.SECTOR_MOVE_SPEED / 2;
-            // gsap.to([
-            //     contHighlight.scale,
-            //     contGraphics.scale,
-            //     contGraphicsFinal.scale,
-            //     cont.scale,
-            // ], {
-            //     x: zoom,
-            //     y: zoom,
-            //     duration: speed, // продолжительность анимации в секундах
-            //     ease: easeType,
-            // });
-
-            timeline.onChangeZoom(zoom);
-            timelineBlocks.onChangeZoom(zoom);
-            reposVertical();
-            moveSectorsTo(true);
-        }
-        zoomBar.autoMove = (value = false) => {
-            active = value;
-            if (value) {
-                selectedSector = this.sectors.length - 1;
-                moveSectorsTo(true);
-            }
-        }
-    }
+      timeline.onChangeZoom(zoom);
+      timelineBlocks.onChangeZoom(zoom);
+      reposVertical();
+      moveSectorsTo(true);
+    };
+    zoomBar.autoMove = (value = false) => {
+      active = value;
+      if (value) {
+        selectedSector = this.sectors.length - 1;
+        moveSectorsTo(true);
+      }
+    };
+  }
 }
