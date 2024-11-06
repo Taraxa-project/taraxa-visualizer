@@ -17,7 +17,7 @@ export class SectorView extends Container {
     clean: Function;
     finalized: boolean = false;
     hashPBFT: string;
-
+    PBFTblockModel: BlockModel;
 
     constructor(app: Application) {
         super();
@@ -171,6 +171,7 @@ export class SectorView extends Container {
                     if (blockModel.finalized) {
                         this.finalized = true;
                         this.hashPBFT = blockModel.hashPBFT;
+                        this.PBFTblockModel = blockModel;
                     }
                     blockView.update();
                     blockView.visible = true;

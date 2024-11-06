@@ -78,15 +78,24 @@
         user-select: none;
       }
 
-      .closebtn {
-        cursor: pointer;
-        background-color: #31364b;
-        display: block;
-        position: absolute;
-        width: 5%;
-        height: auto;
-        right: 0px;
-        margin: 10px;
+      .header {
+        font-family: Inter;
+        font-size: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 50px;
+        color: #ffffff;
+        font-weight: 400;
+
+        .closebtn {
+          cursor: pointer;
+          background-color: #252525;
+          width: 5%;
+          height: auto;
+          right: 0px;
+          margin: 10px;
+        }
       }
 
       .info {
@@ -192,6 +201,26 @@
         letter-spacing: 0.08em;
         text-transform: uppercase;
       }
+
+      .info .explorer {
+        margin-top: 40px;
+        font-family: Inter;
+        color: white;
+        font-size: 16px;
+        font-weight: 400;
+        line-height: 20px;
+        letter-spacing: 0.08em;
+        > a {
+          font-family: Inter;
+          color: white;
+          font-size: 16px;
+          font-weight: 500;
+          text-decoration: none;
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
     </style>
   </head>
   <body>
@@ -207,7 +236,10 @@
     </div>
     <div id="canvas-game"></div>
     <div class="info">
-      <img class="closebtn" src="cross.png" />
+      <div class="header">
+        <div>Taraxa <span class="block-type"></span> Block Info</div>
+        <img class="closebtn" src="cross.png" />
+      </div>
       <div class="info-text">
         <div class="data" id="hash"></div>
         <div class="data" id="level"></div>
@@ -216,6 +248,12 @@
         <div class="data" id="sig"></div>
         <div class="data" id="timestamp"></div>
         <div class="data" id="transactions"></div>
+      </div>
+      <div class="explorer">
+        More details on the
+        <a class="link" href="https://explorer.taraxa.io" target="_blank"
+          >Taraxa Explorer</a
+        >
       </div>
     </div>
     <script src="./pixi.min.js" type="application/javascript"></script>
@@ -233,6 +271,15 @@
       };
 
       window.showblock = function (data) {
+        const isPBFT = data.type === "PBFT";
+        $(".block-type").text(data.type);
+        const baseUrl = "https://explorer.taraxa.io/";
+        const explorerUrl = isPBFT
+          ? `${baseUrl}pbft/${data.hash}`
+          : `${baseUrl}block/${data.hash}`;
+
+        $(".explorer .link").attr("href", explorerUrl);
+
         $.each(data, function (key, value) {
           if (value) {
             var data = value.toString();

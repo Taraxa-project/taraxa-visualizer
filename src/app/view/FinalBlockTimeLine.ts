@@ -64,6 +64,7 @@ export class FinalBlockTimeLine extends Container {
                     labels[i].hashPBFT = sector.hashPBFT;
                     labels[i].setHashPBFT();
                     labels[i].visible = true;
+                    labels[i].model = sector.PBFTblockModel;
                 } else {
                     labels[i].visible = false;
                 }
