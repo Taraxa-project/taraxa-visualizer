@@ -25,7 +25,7 @@ import TWEEN from "@tweenjs/tween.js";
     MyScale.app = app;
     window.addEventListener('resize', MyScale.resize);
     const logo = await Assets.load({
-        src: './logo_min.png',
+        src: './logo.png',
     });
 
     CustomTextures.textures.logo = logo;
