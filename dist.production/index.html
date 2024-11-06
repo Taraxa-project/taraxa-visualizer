@@ -275,7 +275,7 @@
         $(".block-type").text(data.type);
         const baseUrl = "https://explorer.taraxa.io/";
         const explorerUrl = isPBFT
-          ? `${baseUrl}pbft/${data.hash}`
+          ? `${baseUrl}pbft/${data.hashPBFT}`
           : `${baseUrl}block/${data.hash}`;
 
         $(".explorer .link").attr("href", explorerUrl);
