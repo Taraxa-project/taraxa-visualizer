@@ -216,10 +216,7 @@
           color: white;
           font-size: 16px;
           font-weight: 500;
-          text-decoration: none;
-          &:hover {
-            text-decoration: underline;
-          }
+          text-decoration: underline;
         }
       }
     </style>
@@ -316,7 +313,7 @@
               var txt =
                 '<span class="key-style">' +
                 key +
-                '</span><br><span class="value-style">' +
+                '</span><span class="value-style">' +
                 data +
                 '</span><hr className="border"><span class="key-style">';
               $("#" + key).html(txt);
