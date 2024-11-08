@@ -112,7 +112,10 @@ export class MainView extends Container {
 
     let hx = new Graphics();
     hx.roundRect(0, 0, 80, 80, 10).fill(0xffffff);
-    CustomTextures.textures.hex = app.renderer.generateTexture(hx);
+    CustomTextures.textures.hex = app.renderer.generateTexture({
+      target: hx,
+      resolution: 4,
+    });
 
     let addSector = () => {
       for (const key of this.mapData.keys()) {
