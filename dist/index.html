@@ -131,9 +131,9 @@
         > hr {
           width: 100%;
           height: 0.5px;
-          background-color: #ffffff;
+          background-color: #ffffff !important;
           border: 0.5px solid;
-          opacity: 40%;
+          opacity: 40% !important;
         }
       }
 
@@ -321,7 +321,7 @@
                 key +
                 '</span><span class="value-style">' +
                 data +
-                '</span><hr className="border"><span class="key-style">';
+                '</span><hr><span class="key-style">';
               $("#" + key).html(txt);
             }
           }
