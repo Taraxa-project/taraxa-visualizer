@@ -18,6 +18,10 @@ export class BlockView extends Container {
 
   constructor(app: Application) {
     super();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const showInfo = urlParams.get("info") !== "false";
+
     app.stage.addChild(this);
     this.clean = () => {
       this.model = null;
@@ -34,9 +38,11 @@ export class BlockView extends Container {
     obj.interactive = true;
     obj.on("pointerdown", () => {
       const blockData = { ...this.model, type: "DAG" };
-      (window as any).showblock(blockData);
+      if (showInfo) {
+        (window as any).showblock(blockData);
+      }
     });
-    obj.cursor = 'pointer';
+    obj.cursor = "pointer";
 
     obj.interactive = true;
     obj.on("pointerover", () => {
