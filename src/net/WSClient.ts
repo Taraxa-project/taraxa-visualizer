@@ -48,7 +48,7 @@ export class WSClient {
                     } else if (event === SubscriptionTypes.NEW_DAG_BLOCK_FINALIZED) {
                         this.onBlockFinalized(result);
                     } else if (event === SubscriptionTypes.NEW_PBFT_BLOCK) {
-                        this.onNewPBFT(result.pbft_block);
+                        this.onNewPBFT(result);
                     }
                 }
             }
@@ -58,18 +58,12 @@ export class WSClient {
     listen() {
         this.ws.addEventListener('open', () => {
             for (let i = 0; i < this.subscriptions.length; i++) {
-                let params;
-                if(this.subscriptions[i] === SubscriptionTypes.NEW_DAG_BLOCK) {
-                    params = [this.subscriptions[i], true];
-                } else {
-                    params = [this.subscriptions[i]];
-                }
                 this.ws.send(
                     JSON.stringify({
-                        params,
                         jsonrpc: '2.0',
                         id: i + 1,
                         method: 'eth_subscribe',
+                        params: [this.subscriptions[i], true],
                     })
                 );
             }
