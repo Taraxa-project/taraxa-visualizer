@@ -27,23 +27,19 @@ export class MainModel {
         this.onBlockFinalized = (blockData: any) => {
         }
         this.onNewPBFT = (blockData: any) => {
-            const hash = blockData.block_hash.slice(2) == "0x"
+            const hash = blockData.block_hash.slice(0, 2) == "0x"
                 ? blockData.block_hash
                 : "0x" + blockData.block_hash;
             const dag_block_hash_as_pivot = blockData.dag_block_hash_as_pivot;
-            const dagBlockPivot = dag_block_hash_as_pivot.slice(2) == "0x"
+            const dagBlockPivot = dag_block_hash_as_pivot.slice(0, 2) == "0x"
                 ? dag_block_hash_as_pivot
                 : "0x" + dag_block_hash_as_pivot;
-            try {
-                if (this.allBlocksMap.has(dagBlockPivot)) {
-                    const block = this.allBlocksMap.get(dagBlockPivot);
-                    block.finalized = true;
-                    block.hashPBFT = hash;
-                }
-            } catch (e) {
-                console.log('error:', e);
+            if (this.allBlocksMap.has(dagBlockPivot)) {
+                const block = this.allBlocksMap.get(dagBlockPivot);
+                block.finalized = true;
+                block.hashPBFT = hash;
             }
-            //     console.log('dag_block_hash_as_pivot:', hash, dagBlockPivot, this.allBlocksMap.get(dagBlockPivot) != null);
+            // console.log('dag_block_hash_as_pivot:', hash, dagBlockPivot, this.allBlocksMap.get(dagBlockPivot) != null);
         }
         this.getSectorByHash = (block: BlockModel): any => {
             if (this.allBlocksMap.has(block.pivot)) {
